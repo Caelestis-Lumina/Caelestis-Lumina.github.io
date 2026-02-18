@@ -11,7 +11,7 @@ tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 
 该问题属于**矢量微分与坐标投影**
 
-会用到 [传输定理](https://blog.csdn.net/m0_59475014/article/details/157430985?spm=1011.2415.3001.5331)，我的[另一篇博客](https://blog.csdn.net/m0_59475014/article/details/157430985?spm=1011.2415.3001.5331)已有记录
+会用到 传输定理，我的[另一篇博客]({{< relref "posts/fundamentals.md" >}})已有记录
 ## 核心思想
 
 在处理刚体运动学与动力学方程时，严格区分**物理矢量 (Physical Vector)** 与 **代数表示 (Algebraic Representation)** 是至关重要的。
