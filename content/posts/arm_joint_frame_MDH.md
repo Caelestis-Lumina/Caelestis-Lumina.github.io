@@ -1,7 +1,7 @@
 +++
 title = "[机械臂] 关节空间和变换的定义与获取（基于改进D-H）"
 date = 2026-02-18T00:00:00+08:00
-draft = true
+draft = false
 description = "基于改进 DH（MDH）梳理关节坐标系建立、参数定义、旋转矩阵与齐次变换矩阵的获取方法。"
 columns = ["控制/机器人学/运动学"]
 tags = ["运动学", "线性代数"]
@@ -68,7 +68,14 @@ Craig 的 MDH 方法特别适合处理树状结构（分叉）的机器人，因
 
 数值定义：${}^A_B R$ 的每一列就是坐标系 B 的三个主轴单位向量（$\hat{x}_B, \hat{y}_B, \hat{z}_B$）在坐标系 A 中的投影（分量）
 
-（点积推导）通过将 B 系的基向量投影到 A 系的基向量（$\hat{x}_A, \hat{y}_A, \hat{z}_A$）上得到：$${}^A_B R = \begin{bmatrix} \hat{x}_B \cdot \hat{x}_A & \hat{y}_B \cdot \hat{x}_A & \hat{z}_B \cdot \hat{x}_A \\ \hat{x}_B \cdot \hat{y}_A & \hat{y}_B \cdot \hat{y}_A & \hat{z}_B \cdot \hat{y}_A \\ \hat{x}_B \cdot \hat{z}_A & \hat{y}_B \cdot \hat{z}_A & \hat{z}_B \cdot \hat{z}_A \end{bmatrix}$$
+（点积推导）通过将 B 系的基向量投影到 A 系的基向量（$\hat{x}_A, \hat{y}_A, \hat{z}_A$）上得到：
+$$
+{}^A_B R = \begin{bmatrix}
+\hat{x}_B \cdot \hat{x}_A & \hat{y}_B \cdot \hat{x}_A & \hat{z}_B \cdot \hat{x}_A \\
+\hat{x}_B \cdot \hat{y}_A & \hat{y}_B \cdot \hat{y}_A & \hat{z}_B \cdot \hat{y}_A \\
+\hat{x}_B \cdot \hat{z}_A & \hat{y}_B \cdot \hat{z}_A & \hat{z}_B \cdot \hat{z}_A
+\end{bmatrix}
+$$
 
 
 假设坐标系 B 的三个轴单位向量在坐标系 A 中表示为：
@@ -77,7 +84,13 @@ Craig 的 MDH 方法特别适合处理树状结构（分叉）的机器人，因
 * ${}^A\hat{z}_B$：B 系 z 轴在 A 系中的描述
 
 那么，从结果上来看，${}^A_B R$ 就是直接由这三列向量拼成的：
-$${}^A_B R = \begin{bmatrix} | & | & | \\ {}^A\hat{x}_B & {}^A\hat{y}_B & {}^A\hat{z}_B \\ | & | & | \end{bmatrix}$$
+$$
+{}^A_B R = \begin{bmatrix}
+| & | & | \\
+{}^A\hat{x}_B & {}^A\hat{y}_B & {}^A\hat{z}_B \\
+| & | & |
+\end{bmatrix}
+$$
 
 然后如果两个关节不香菱，那么我们会使用逐级传递的方式，得到两个目标关节之间的关系
 
@@ -92,7 +105,10 @@ MDH 的变换顺序是：先绕 X 轴动，再绕 Z 轴动
 
 即：$Frame \{i-1\} \xrightarrow{Rot_x(\alpha), Trans_x(a)} \text{Intermediate} \xrightarrow{Rot_z(\theta), Trans_z(d)} Frame \{i\}$
 
-公式为：$${}^{i-1}_i T = Rot_x(\alpha_{i-1}) \cdot Trans_x(a_{i-1}) \cdot Rot_z(\theta_i) \cdot Trans_z(d_i)$$
+公式为：
+$$
+{}^{i-1}_i T = Rot_x(\alpha_{i-1}) \cdot Trans_x(a_{i-1}) \cdot Rot_z(\theta_i) \cdot Trans_z(d_i)
+$$
 
 展开后的矩阵形式（实际用于计算的矩阵）：
 $${}^{i-1}_i T = \begin{bmatrix}
