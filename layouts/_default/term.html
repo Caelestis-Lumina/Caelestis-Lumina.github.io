@@ -1,0 +1,106 @@
+{{- define "main" }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{- if .Description }}
+  <div class="post-description">{{ .Description | markdownify }}</div>
+  {{- end }}
+</header>
+
+{{- if eq .Type "columns" }}
+{{- $current := .Data.Term }}
+{{- $prefix := printf "%s/" $current }}
+{{- $currentDepth := len (split $current "/") }}
+{{- $children := slice }}
+{{- $posts := slice }}
+
+{{- range $name, $items := site.Taxonomies.columns }}
+  {{- if and (hasPrefix $name $prefix) (eq (len (split $name "/")) (add $currentDepth 1)) }}
+      {{- $children = $children | append $name }}
+  {{- end }}
+  {{- if or (eq $name $current) (hasPrefix $name $prefix) }}
+    {{- range $items.Pages }}
+      {{- $posts = $posts | append . }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+{{- $posts = sort ($posts | uniq) "Date" "desc" }}
+{{- $children = sort ($children | uniq) }}
+
+{{- if gt (len $children) 0 }}
+<section class="term-children">
+  <h2>子分栏</h2>
+  <ul class="term-child-list">
+    {{- range $child := $children }}
+    {{- with site.GetPage (printf "/columns/%s" $child) }}
+    <li><a href="{{ .RelPermalink }}">{{ $child }}</a></li>
+    {{- end }}
+    {{- end }}
+  </ul>
+</section>
+{{- end }}
+
+<section>
+  <h2>分栏内文章</h2>
+  {{- if gt (len $posts) 0 }}
+  <div class="term-post-list">
+    {{- range $posts }}
+    <article class="post-entry">
+      <header class="entry-header"><h2>{{ .Title }}</h2></header>
+      <div class="entry-content"><p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p></div>
+      <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+      <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
+    </article>
+    {{- end }}
+  </div>
+  {{- else }}
+  <p>该分栏下暂无文章。</p>
+  {{- end }}
+</section>
+
+{{- else if eq .Type "tags" }}
+<section>
+  <h2>标签相关文章</h2>
+  {{- if gt (len .Pages) 0 }}
+  <div class="term-post-list">
+    {{- range .Pages.ByDate.Reverse }}
+    <article class="post-entry">
+      <header class="entry-header"><h2>{{ .Title }}</h2></header>
+      <div class="entry-content">
+        <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+        {{- with .Params.columns }}
+        <p class="entry-columns">
+          归属分栏：
+          {{- range $idx, $col := . }}
+          {{- if gt $idx 0 }} · {{ end -}}
+          {{- with site.GetPage (printf "/columns/%s" $col) }}
+          <a href="{{ .RelPermalink }}">{{ $col }}</a>
+          {{- else }}
+          <span>{{ $col }}</span>
+          {{- end }}
+          {{- end }}
+        </p>
+        {{- end }}
+      </div>
+      <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+      <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
+    </article>
+    {{- end }}
+  </div>
+  {{- else }}
+  <p>该标签下暂无文章。</p>
+  {{- end }}
+</section>
+
+{{- else }}
+{{- range .Pages }}
+<article class="post-entry">
+  <header class="entry-header"><h2>{{ .Title }}</h2></header>
+  <div class="entry-content"><p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p></div>
+  <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+  <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
+</article>
+{{- end }}
+{{- end }}
+{{- end }}

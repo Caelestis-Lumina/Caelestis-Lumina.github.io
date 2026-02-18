@@ -2,7 +2,8 @@
 title = "Hello, Full-Stack"
 date = 2026-02-18T00:00:00+08:00
 draft = false
-tags = ["Hugo", "PaperMod", "GitHub Pages"]
+columns = ["工程实践/博客系统", "人工智能/Agent"]
+tags = ["Hugo", "PaperMod", "GitHub Pages", "Workflow", "Full-Stack"]
 categories = ["建站"]
 +++
 

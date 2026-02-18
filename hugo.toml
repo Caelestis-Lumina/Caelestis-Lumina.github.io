@@ -9,6 +9,10 @@ enableRobotsTXT = true
 [outputs]
 home = ["HTML", "RSS", "JSON"]
 
+[taxonomies]
+tag = "tags"
+column = "columns"
+
 [params]
 author = "Caelestis-Lumina"
 description = "分享编程语言、人工智能、机器人等相关技术栈"
@@ -26,12 +30,24 @@ Content = "这里记录 Programming Language、AI、Robotics 等技术学习与�
 
 [[menu.main]]
 identifier = "posts"
-name = "文章"
+name = "Articles"
 url = "/posts/"
 weight = 10
 
 [[menu.main]]
+identifier = "columns"
+name = "Categories"
+url = "/columns/"
+weight = 30
+
+[[menu.main]]
+identifier = "tags"
+name = "Tags"
+url = "/tags/"
+weight = 40
+
+[[menu.main]]
 identifier = "about"
-name = "关于"
+name = "About"
 url = "/about/"
 weight = 20
