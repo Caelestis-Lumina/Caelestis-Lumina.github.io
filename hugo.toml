@@ -1,0 +1,37 @@
+baseURL = "https://Caelestis-Lumina.github.io/"
+languageCode = "zh-cn"
+title = "Full-Stack"
+theme = "PaperMod"
+defaultContentLanguage = "zh"
+hasCJKLanguage = true
+enableRobotsTXT = true
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[params]
+author = "Caelestis-Lumina"
+description = "分享编程语言、人工智能、机器人等相关技术栈"
+ShowReadingTime = true
+ShowCodeCopyButtons = true
+ShowToc = true
+ShowBreadCrumbs = true
+ShowPostNavLinks = true
+ShowWordCount = true
+DateFormat = "2006-01-02"
+
+[params.homeInfoParams]
+Title = "欢迎来到 Full-Stack"
+Content = "这里记录 Programming Language、AI、Robotics 等技术学习与实践。"
+
+[[menu.main]]
+identifier = "posts"
+name = "文章"
+url = "/posts/"
+weight = 10
+
+[[menu.main]]
+identifier = "about"
+name = "关于"
+url = "/about/"
+weight = 20
