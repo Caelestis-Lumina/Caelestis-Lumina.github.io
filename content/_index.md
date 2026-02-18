@@ -2,10 +2,12 @@
 title = "首页"
 +++
 
-欢迎来到 **Full-Stack**。
+Welcome to **CL's Dev Blog**。
 
-这里聚焦中文内容为主，结合 English technical terms，持续分享：
+本博客主要用于分享学习和开发中的各种信息， 主要包含以下领域的内容：
 
-- 编程语言与工程实践
-- Artificial Intelligence 与模型应用
-- Robotics 与系统集成
+- 编程语言 与 工程实践
+- AI算法原理 与 模型设计应用
+- Robotics 与 系统集成
+- 外围环境/工具的搭建与使用
+- 后续可能还有机械硬件方向的学习

@@ -1,6 +1,6 @@
 baseURL = "https://caelestis-lumina.github.io/"
 languageCode = "zh-cn"
-title = "Full-Stack"
+title = "Caelestis Lumina"
 theme = "PaperMod"
 defaultContentLanguage = "zh"
 hasCJKLanguage = true
@@ -21,7 +21,7 @@ ShowWordCount = true
 DateFormat = "2006-01-02"
 
 [params.homeInfoParams]
-Title = "欢迎来到 Full-Stack"
+Title = "Welcome to CL's Blog"
 Content = "这里记录 Programming Language、AI、Robotics 等技术学习与实践。"
 
 [[menu.main]]
