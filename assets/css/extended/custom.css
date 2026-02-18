@@ -1,6 +1,6 @@
 :root {
   --main-width: 980px;
-  --sidebar-width: 272px;
+  --sidebar-width: 236px;
   --sidebar-border: rgba(125, 125, 125, 0.24);
 }
 
@@ -14,9 +14,6 @@
 }
 
 .site-shell {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.1rem;
   max-width: 1380px;
   margin: 0.95rem auto 0;
   padding: 0 1rem;
@@ -24,23 +21,97 @@
 
 .site-shell > .main {
   margin: 0;
-  max-width: none;
+  max-width: 100%;
   min-width: 0;
-  flex: 1;
 }
 
 .column-sidebar {
-  position: sticky;
+  position: fixed;
+  left: 0;
   top: 5.2rem;
-  width: min(var(--sidebar-width), 30vw);
+  width: min(var(--sidebar-width), 24vw);
   max-height: calc(100vh - 6rem);
   overflow: auto;
   border: 1px solid var(--sidebar-border);
-  border-radius: 14px;
-  padding: 0.75rem 0.85rem;
+  border-left: 0;
+  border-radius: 0 14px 14px 0;
+  padding: 0.75rem 0.78rem 0.75rem 0.72rem;
   background: var(--entry);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  transition: all 0.25s ease;
+  transition: transform 0.24s ease, opacity 0.2s ease;
+  z-index: 110;
+  pointer-events: auto;
+}
+
+.column-sidebar.is-hidden {
+  transform: translateX(calc(-100% - 1rem));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.post-toc-sidebar {
+  position: fixed;
+  left: 0;
+  top: 5.2rem;
+  width: min(var(--sidebar-width), 24vw);
+  max-height: calc(100vh - 6rem);
+  overflow: auto;
+  border: 1px solid var(--sidebar-border);
+  border-left: 0;
+  border-radius: 0 14px 14px 0;
+  padding: 0.75rem 0.78rem 0.75rem 0.72rem;
+  background: var(--entry);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  transition: transform 0.24s ease, opacity 0.2s ease;
+  z-index: 110;
+}
+
+.post-toc-sidebar.is-hidden {
+  transform: translateX(calc(-100% - 1rem));
+  opacity: 0;
+  pointer-events: none;
+}
+
+.post-toc-toggle {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--theme);
+  padding: 0.44rem 0.72rem;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.post-toc-fab {
+  position: fixed;
+  left: 0.55rem;
+  bottom: 3.8rem;
+  top: auto;
+  z-index: 121;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--entry);
+  padding: 0.42rem 0.8rem;
+  font-weight: 600;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+  display: none;
+}
+
+.post-toc-fab.is-visible {
+  display: inline-flex;
+}
+
+.post-toc-body #TableOfContents {
+  font-size: 0.92rem;
+}
+
+.post-toc-body #TableOfContents ul {
+  margin: 0.25rem 0 0.25rem 0.75rem;
+}
+
+.post-toc-body #TableOfContents a {
+  color: var(--primary);
 }
 
 .column-sidebar-toggle {
@@ -54,26 +125,11 @@
   margin-bottom: 0.6rem;
 }
 
-.site-shell.sidebar-hidden {
-  gap: 0;
-}
-
-.site-shell.sidebar-hidden .column-sidebar {
-  width: 0;
-  min-width: 0;
-  max-height: 0;
-  overflow: hidden;
-  margin: 0;
-  padding: 0;
-  border-width: 0;
-  box-shadow: none;
-  opacity: 0;
-}
-
 .column-sidebar-fab {
   position: fixed;
-  left: 0.7rem;
-  top: 5.1rem;
+  left: 0.55rem;
+  bottom: 7.2rem;
+  top: auto;
   z-index: 121;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -145,6 +201,16 @@
   border-radius: 14px;
   background: var(--entry);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.home-intro-block:hover,
+.home-topic-block:hover,
+.home-stat-card:hover,
+.home-recent-item:hover,
+.post-entry:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12);
 }
 
 .home-intro-block,
@@ -254,25 +320,47 @@
 
 @media (max-width: 990px) {
   .site-shell {
-    flex-direction: column;
     gap: 0.8rem;
-  }
-
-  .site-shell.sidebar-hidden .column-sidebar {
-    width: 100%;
-    max-height: none;
-    border-width: 1px;
-    padding: 0.75rem 0.85rem;
-    opacity: 1;
   }
 
   .column-sidebar {
     position: static;
+    left: auto;
     width: 100%;
     max-height: none;
+    border-left: 1px solid var(--sidebar-border);
+    border-radius: 14px;
+    padding: 0.75rem 0.85rem;
   }
 
   .column-sidebar-fab {
+    display: none !important;
+  }
+
+  .post-toc-sidebar {
+    position: static;
+    width: 100%;
+    max-height: none;
+    border-left: 1px solid var(--sidebar-border);
+    border-radius: 14px;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .post-toc-sidebar.is-hidden {
+    display: none;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .column-sidebar.is-hidden {
+    display: none;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .post-toc-fab {
     display: none !important;
   }
 

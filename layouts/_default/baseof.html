@@ -24,6 +24,8 @@
     {{ partialCached "header.html" . .Page -}}
     <div class="site-shell">
         {{ partial "column_sidebar.html" . }}
+        {{ partial "post_toc_sidebar.html" . }}
+        {{ partial "left_sidebar_controller.html" . }}
         <main class="main">
             {{- block "main" . }}{{ end }}
         </main>

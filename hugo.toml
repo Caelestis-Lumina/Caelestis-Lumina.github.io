@@ -36,7 +36,7 @@ weight = 10
 
 [[menu.main]]
 identifier = "columns"
-name = "Categories"
+name = "Columns"
 url = "/columns/"
 weight = 30
 
@@ -51,3 +51,14 @@ identifier = "about"
 name = "About"
 url = "/about/"
 weight = 20
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['$$', '$$'], ['\\[', '\\]']]
+          inline = [['$', '$'], ['\\(', '\\)']]

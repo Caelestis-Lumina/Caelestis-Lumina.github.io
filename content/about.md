@@ -4,7 +4,7 @@ date = 2026-02-18T00:00:00+08:00
 draft = false
 +++
 
-你好，我是 **Caelestis-Lumina**。
+你好，我是 **Caelestis-Lumina**, 你也可以叫我**辰尘**
 
 这个博客用于记录与分享 Full-Stack 技术学习路径，重点覆盖：
 

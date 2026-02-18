@@ -1,0 +1,13 @@
+{{- if and (eq .Kind "page") (.Param "ShowToc") -}}
+<aside class="post-toc-sidebar is-hidden" aria-label="文章目录">
+  <button class="post-toc-toggle" type="button" aria-expanded="false">
+    文章目录
+  </button>
+  <div class="post-toc-body">
+    {{- .TableOfContents -}}
+  </div>
+</aside>
+<button class="post-toc-fab" type="button" aria-expanded="false" aria-label="展开文章目录">
+  目录
+</button>
+{{- end -}}

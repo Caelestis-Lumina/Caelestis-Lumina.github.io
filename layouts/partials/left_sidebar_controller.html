@@ -1,0 +1,208 @@
+<script>
+(() => {
+  const treeNav = document.querySelector('.column-tree-nav');
+  const columnPanel = document.querySelector('.column-sidebar');
+  const columnToggle = document.querySelector('.column-sidebar-toggle');
+  const columnFab = document.querySelector('.column-sidebar-fab');
+  const tocPanel = document.querySelector('.post-toc-sidebar');
+  const tocToggle = document.querySelector('.post-toc-toggle');
+  const tocFab = document.querySelector('.post-toc-fab');
+  const activePanelKey = 'cl_left_active_panel';
+
+  if (!columnPanel || !columnToggle || !columnFab) return;
+
+  const hasTocEntries = () => !!(tocPanel && tocPanel.querySelector('#TableOfContents li'));
+
+  const safeGet = (k) => {
+    try { return localStorage.getItem(k); } catch (e) { return null; }
+  };
+  const safeSet = (k, v) => {
+    try { localStorage.setItem(k, v); } catch (e) {}
+  };
+
+  const syncTocLabelFromHeadings = () => {
+    if (!tocPanel) return;
+    const tocLinks = tocPanel.querySelectorAll('#TableOfContents a[href^="#"]');
+    if (!tocLinks.length) return;
+
+    tocLinks.forEach((link) => {
+      const raw = link.getAttribute('href');
+      if (!raw || raw.length < 2) return;
+      const targetId = decodeURIComponent(raw.slice(1));
+      const heading = document.getElementById(targetId);
+      if (!heading) return;
+
+      const clone = heading.cloneNode(true);
+      clone.querySelectorAll('a.anchor').forEach((n) => n.remove());
+      link.innerHTML = clone.innerHTML;
+      link.setAttribute('aria-label', clone.textContent || link.textContent || '');
+    });
+  };
+
+  const typesetMathInToc = () => {
+    if (!tocPanel || tocPanel.classList.contains('is-hidden')) return;
+    const tocContainer = tocPanel.querySelector('.post-toc-body');
+    if (!tocContainer) return;
+
+    const run = () => {
+      syncTocLabelFromHeadings();
+      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+        window.MathJax.typesetClear && window.MathJax.typesetClear([tocContainer]);
+        window.MathJax.typesetPromise([tocContainer]).catch(() => {});
+      }
+    };
+
+    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+      run();
+      return;
+    }
+
+    let retry = 0;
+    const timer = setInterval(() => {
+      retry += 1;
+      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+        clearInterval(timer);
+        run();
+      } else if (retry >= 20) {
+        clearInterval(timer);
+        syncTocLabelFromHeadings();
+      }
+    }, 150);
+  };
+
+  const applyPanelState = (active) => {
+    const tocAvailable = hasTocEntries();
+    const tocActive = active === 'toc' && tocAvailable;
+    const columnActive = active === 'column';
+    const noneActive = active === 'none';
+    const useColumn = columnActive;
+    const useToc = tocActive;
+
+    columnPanel.classList.toggle('is-hidden', !useColumn);
+    columnToggle.setAttribute('aria-expanded', String(useColumn));
+    columnFab.classList.toggle('is-visible', !useColumn);
+
+    if (tocPanel && tocToggle && tocFab) {
+      tocPanel.classList.toggle('is-hidden', !useToc);
+      tocToggle.setAttribute('aria-expanded', String(useToc));
+      tocFab.classList.toggle('is-visible', (!useToc && tocAvailable) || (noneActive && tocAvailable));
+      if (!tocAvailable) tocPanel.classList.add('is-hidden');
+      if (useToc) typesetMathInToc();
+    }
+
+    if (useToc) {
+      safeSet(activePanelKey, 'toc');
+    } else if (useColumn) {
+      safeSet(activePanelKey, 'column');
+    } else {
+      safeSet(activePanelKey, 'none');
+    }
+  };
+
+  let activePanel = safeGet(activePanelKey);
+  if (activePanel !== 'column' && activePanel !== 'toc' && activePanel !== 'none') activePanel = 'column';
+  if (!hasTocEntries() && activePanel === 'toc') activePanel = 'column';
+  applyPanelState(activePanel);
+  if (activePanel === 'toc') typesetMathInToc();
+
+  columnToggle.addEventListener('click', () => {
+    const isOpen = !columnPanel.classList.contains('is-hidden');
+    applyPanelState(isOpen ? 'none' : 'column');
+  });
+  columnFab.addEventListener('click', () => applyPanelState('column'));
+  if (tocToggle) {
+    tocToggle.addEventListener('click', () => {
+      const isOpen = tocPanel && !tocPanel.classList.contains('is-hidden');
+      applyPanelState(isOpen ? 'none' : 'toc');
+    });
+  }
+  if (tocFab) tocFab.addEventListener('click', () => applyPanelState('toc'));
+
+  if (!treeNav) return;
+  const source = document.querySelectorAll('.column-flat-data li');
+  if (!source.length) {
+    treeNav.innerHTML = '<p class="column-sidebar-empty">暂无分栏</p>';
+    return;
+  }
+
+  const currentPath = (treeNav.dataset.current || '').trim();
+  const root = { children: {} };
+
+  source.forEach((item) => {
+    const fullPath = item.dataset.path;
+    const url = item.dataset.url;
+    const count = Number(item.dataset.count || '0');
+    const parts = fullPath.split('/').filter(Boolean);
+    let cursor = root;
+    let aggregatePath = '';
+
+    parts.forEach((part) => {
+      aggregatePath = aggregatePath ? `${aggregatePath}/${part}` : part;
+      if (!cursor.children[part]) {
+        cursor.children[part] = { label: part, path: aggregatePath, children: {} };
+      }
+      cursor = cursor.children[part];
+    });
+
+    cursor.url = url;
+    cursor.count = count;
+  });
+
+  const isAncestorOfCurrent = (path) => currentPath && (currentPath === path || currentPath.startsWith(path + '/'));
+
+  const renderNode = (node) => {
+    const li = document.createElement('li');
+    const hasChildren = Object.keys(node.children).length > 0;
+    const openByDefault = isAncestorOfCurrent(node.path);
+
+    if (hasChildren) {
+      const details = document.createElement('details');
+      details.open = openByDefault;
+      const summary = document.createElement('summary');
+      if (node.url) {
+        const link = document.createElement('a');
+        link.href = node.url;
+        link.textContent = node.label;
+        summary.appendChild(link);
+      } else {
+        summary.textContent = node.label;
+      }
+      if (node.count) {
+        const sup = document.createElement('sup');
+        sup.textContent = ` ${node.count}`;
+        summary.appendChild(sup);
+      }
+      details.appendChild(summary);
+
+      const ul = document.createElement('ul');
+      Object.values(node.children)
+        .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
+        .forEach((child) => ul.appendChild(renderNode(child)));
+      details.appendChild(ul);
+      li.appendChild(details);
+    } else {
+      const link = document.createElement('a');
+      link.href = node.url || '#';
+      link.textContent = node.label;
+      if (node.count) {
+        const sup = document.createElement('sup');
+        sup.textContent = ` ${node.count}`;
+        link.appendChild(sup);
+      }
+      li.appendChild(link);
+    }
+
+    if (node.path === currentPath) {
+      li.classList.add('is-current-column');
+    }
+    return li;
+  };
+
+  const rootList = document.createElement('ul');
+  rootList.className = 'column-tree-root';
+  Object.values(root.children)
+    .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
+    .forEach((node) => rootList.appendChild(renderNode(node)));
+  treeNav.appendChild(rootList);
+})();
+</script>
