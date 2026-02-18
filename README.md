@@ -2,6 +2,10 @@
 
 基于 Hugo 与 PaperMod 的技术博客模板，支持 Markdown 写作与 GitHub Actions 自动部署到 GitHub Pages。
 
+## 注意事项
+
+博文中，井号标题和加粗符号和公式不能同时出现在同一语句中，否则会导致构建报错
+
 ## 项目结构
 
 ```text
