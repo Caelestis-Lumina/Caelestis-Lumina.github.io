@@ -2,7 +2,8 @@
 title = "首页"
 +++
 
-欢迎来到 **Full-Stack**。  
+欢迎来到 **Full-Stack**。
+
 这里聚焦中文内容为主，结合 English technical terms，持续分享：
 
 - 编程语言与工程实践
