@@ -100,8 +100,12 @@
   };
 
   let activePanel = safeGet(activePanelKey);
-  if (activePanel !== 'column' && activePanel !== 'toc' && activePanel !== 'none') activePanel = 'column';
-  if (!hasTocEntries() && activePanel === 'toc') activePanel = 'column';
+  const tocAvailableOnPage = hasTocEntries();
+  if (activePanel !== 'column' && activePanel !== 'toc' && activePanel !== 'none') {
+    activePanel = tocAvailableOnPage ? 'toc' : 'column';
+  }
+  if (tocAvailableOnPage) activePanel = 'toc';
+  if (!tocAvailableOnPage && activePanel === 'toc') activePanel = 'column';
   applyPanelState(activePanel);
   if (activePanel === 'toc') typesetMathInToc();
 
