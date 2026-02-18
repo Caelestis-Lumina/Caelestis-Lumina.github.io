@@ -18,14 +18,23 @@
   {{- if and (hasPrefix $name $prefix) (eq (len (split $name "/")) (add $currentDepth 1)) }}
       {{- $children = $children | append $name }}
   {{- end }}
-  {{- if or (eq $name $current) (hasPrefix $name $prefix) }}
-    {{- range $items.Pages }}
-      {{- $posts = $posts | append . }}
+{{- end }}
+
+{{- range site.RegularPages }}
+  {{- $hit := false }}
+  {{- with .Params.columns }}
+    {{- range . }}
+      {{- if or (eq . $current) (hasPrefix . $prefix) }}
+        {{- $hit = true }}
+      {{- end }}
     {{- end }}
+  {{- end }}
+  {{- if $hit }}
+    {{- $posts = $posts | append . }}
   {{- end }}
 {{- end }}
 
-{{- $posts = sort ($posts | uniq) "Date" "desc" }}
+{{- $posts = sort $posts "Date" "desc" }}
 {{- $children = sort ($children | uniq) }}
 
 {{- if gt (len $children) 0 }}
@@ -46,12 +55,16 @@
   {{- if gt (len $posts) 0 }}
   <div class="term-post-list">
     {{- range $posts }}
+    {{- with . }}
     <article class="post-entry">
       <header class="entry-header"><h2>{{ .Title }}</h2></header>
-      <div class="entry-content"><p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p></div>
-      <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+      <div class="entry-content"><p>{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Title }}{{ end }}{{ end }}</p></div>
+      <footer class="entry-footer">
+        <span>{{ .Date | time.Format "2006-01-02" }}</span>{{ with site.Params.author }} · <span>{{ . }}</span>{{ end }}
+      </footer>
       <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
     </article>
+    {{- end }}
     {{- end }}
   </div>
   {{- else }}
@@ -65,10 +78,11 @@
   {{- if gt (len .Pages) 0 }}
   <div class="term-post-list">
     {{- range .Pages.ByDate.Reverse }}
+    {{- with . }}
     <article class="post-entry">
       <header class="entry-header"><h2>{{ .Title }}</h2></header>
       <div class="entry-content">
-        <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+        <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Title }}{{ end }}{{ end }}</p>
         {{- with .Params.columns }}
         <p class="entry-columns">
           归属分栏：
@@ -83,9 +97,12 @@
         </p>
         {{- end }}
       </div>
-      <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+      <footer class="entry-footer">
+        <span>{{ .Date | time.Format "2006-01-02" }}</span>{{ with site.Params.author }} · <span>{{ . }}</span>{{ end }}
+      </footer>
       <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
     </article>
+    {{- end }}
     {{- end }}
   </div>
   {{- else }}
@@ -95,12 +112,16 @@
 
 {{- else }}
 {{- range .Pages }}
+{{- with . }}
 <article class="post-entry">
   <header class="entry-header"><h2>{{ .Title }}</h2></header>
-  <div class="entry-content"><p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p></div>
-  <footer class="entry-footer">{{ partial "post_meta.html" . }}</footer>
+  <div class="entry-content"><p>{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Title }}{{ end }}{{ end }}</p></div>
+  <footer class="entry-footer">
+    <span>{{ .Date | time.Format "2006-01-02" }}</span>{{ with site.Params.author }} · <span>{{ . }}</span>{{ end }}
+  </footer>
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .RelPermalink }}"></a>
 </article>
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

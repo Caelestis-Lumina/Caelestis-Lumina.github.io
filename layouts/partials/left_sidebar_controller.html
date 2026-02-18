@@ -1,5 +1,6 @@
 <script>
 (() => {
+  const init = () => {
   const treeNav = document.querySelector('.column-tree-nav');
   const columnPanel = document.querySelector('.column-sidebar');
   const columnToggle = document.querySelector('.column-sidebar-toggle');
@@ -10,6 +11,55 @@
   const activePanelKey = 'cl_left_active_panel';
 
   if (!columnPanel || !columnToggle || !columnFab) return;
+
+  const buildPostTocFromHeadings = () => {
+    if (!tocPanel) return;
+    const tocRoot = tocPanel.querySelector('#TableOfContents');
+    if (!tocRoot) return;
+    tocRoot.innerHTML = '';
+
+    const headings = Array.from(document.querySelectorAll('.post-content h2[id], .post-content h3[id], .post-content h4[id]'));
+    if (!headings.length) return;
+
+    const rootList = document.createElement('ul');
+    const listStack = [rootList];
+    let currentLevel = 2;
+
+    headings.forEach((heading) => {
+      const level = Number(heading.tagName.replace('H', ''));
+      if (!Number.isFinite(level)) return;
+
+      while (level > currentLevel) {
+        const parentList = listStack[listStack.length - 1];
+        let lastItem = parentList.lastElementChild;
+        if (!lastItem) {
+          lastItem = document.createElement('li');
+          parentList.appendChild(lastItem);
+        }
+        const nestedList = document.createElement('ul');
+        lastItem.appendChild(nestedList);
+        listStack.push(nestedList);
+        currentLevel += 1;
+      }
+
+      while (level < currentLevel && listStack.length > 1) {
+        listStack.pop();
+        currentLevel -= 1;
+      }
+
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = `#${encodeURIComponent(heading.id)}`;
+      const clone = heading.cloneNode(true);
+      clone.querySelectorAll('a.anchor').forEach((n) => n.remove());
+      link.innerHTML = clone.innerHTML;
+      link.setAttribute('aria-label', clone.textContent || heading.textContent || '');
+      li.appendChild(link);
+      listStack[listStack.length - 1].appendChild(li);
+    });
+
+    tocRoot.appendChild(rootList);
+  };
 
   const hasTocEntries = () => !!(tocPanel && tocPanel.querySelector('#TableOfContents li'));
 
@@ -69,6 +119,8 @@
       }
     }, 150);
   };
+
+  buildPostTocFromHeadings();
 
   const applyPanelState = (active) => {
     const tocAvailable = hasTocEntries();
@@ -208,5 +260,12 @@
     .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
     .forEach((node) => rootList.appendChild(renderNode(node)));
   treeNav.appendChild(rootList);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
 </script>

@@ -110,11 +110,13 @@
     <h2>最近更新</h2>
     <div class="home-recent-list">
       {{- range $recentPosts }}
+      {{- with . }}
       <article class="home-recent-item">
         <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-        <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+        <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Title }}{{ end }}{{ end }}</p>
         <small>{{ .Lastmod | time.Format "2006-01-02" }}</small>
       </article>
+      {{- end }}
       {{- end }}
     </div>
   </section>
@@ -139,6 +141,7 @@
 {{- $term := .Data.Term }}
 {{- if not .IsHome }}
 {{- range $index, $page := $paginator.Pages }}
+{{- with $page }}
 
 {{- $class := "post-entry" }}
 
@@ -167,7 +170,15 @@
   </header>
   {{- if (ne (.Param "hideSummary") true) }}
   <div class="entry-content">
-    <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+    <p>
+      {{- if .IsPage -}}
+        {{- with .Params.summary -}}{{ . }}{{- else -}}
+          {{- with .Description -}}{{ . }}{{- else -}}{{ .Title }}{{- end -}}
+        {{- end -}}
+      {{- else -}}
+        {{- with .Description -}}{{ . }}{{- else -}}{{ .Title }}{{- end -}}
+      {{- end -}}
+    </p>
   </div>
   {{- end }}
   {{- if not (.Param "hideMeta") }}
@@ -177,6 +188,7 @@
   {{- end }}
   <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
 </article>
+{{- end }}
 {{- end }}
 {{- end }}
 

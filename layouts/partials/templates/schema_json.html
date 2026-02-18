@@ -1,0 +1,49 @@
+{{- $isPage := .IsPage -}}
+{{- $title := .Title | default site.Title -}}
+{{- $desc := .Description | default site.Params.description | default $title -}}
+{{- $author := (partial "author.html" .) -}}
+{{- $pub := .PublishDate | default .Date -}}
+{{- $mod := .Lastmod | default .Date -}}
+{{- $keywords := .Params.tags | default (slice) -}}
+{{- $logo := site.Params.assets.favicon | default "favicon.ico" | absURL -}}
+{{- if $isPage -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": {{ $title | jsonify }},
+  "name": {{ $title | jsonify }},
+  "description": {{ $desc | plainify | jsonify }},
+  "keywords": {{ $keywords | jsonify }},
+  "inLanguage": {{ site.LanguageCode | default "zh-cn" | jsonify }},
+  "datePublished": {{ $pub | time.Format "2006-01-02T15:04:05Z07:00" | jsonify }},
+  "dateModified": {{ $mod | time.Format "2006-01-02T15:04:05Z07:00" | jsonify }},
+  "author": {
+    "@type": "Person",
+    "name": {{ $author | jsonify }}
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": {{ .Permalink | jsonify }}
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": {{ site.Title | jsonify }},
+    "logo": {
+      "@type": "ImageObject",
+      "url": {{ $logo | jsonify }}
+    }
+  }
+}
+</script>
+{{- else -}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ site.Title | jsonify }},
+  "url": {{ site.BaseURL | jsonify }},
+  "description": {{ (site.Params.description | default site.Title) | plainify | jsonify }}
+}
+</script>
+{{- end -}}
