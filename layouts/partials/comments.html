@@ -1,0 +1,49 @@
+{{- with site.Params.giscus -}}
+{{- if and .enabled .repo .repoId .category .categoryId -}}
+<section class="comments-section" aria-labelledby="comments-title">
+  <div class="comments-heading">
+    <p class="home-section-label">Discussion / Feedback</p>
+    <h2 id="comments-title">Questions, corrections, or better ideas?</h2>
+    <p>Join the discussion on GitHub. Constructive corrections help keep these notes accurate.</p>
+  </div>
+  <div class="giscus-host">
+    <script src="https://giscus.app/client.js"
+      data-repo="{{ .repo }}"
+      data-repo-id="{{ .repoId }}"
+      data-category="{{ .category }}"
+      data-category-id="{{ .categoryId }}"
+      data-mapping="{{ .mapping | default "pathname" }}"
+      data-strict="{{ .strict | default "0" }}"
+      data-reactions-enabled="{{ .reactionsEnabled | default "1" }}"
+      data-emit-metadata="{{ .emitMetadata | default "0" }}"
+      data-input-position="{{ .inputPosition | default "top" }}"
+      data-theme="preferred_color_scheme"
+      data-lang="{{ .lang | default "en" }}"
+      data-loading="{{ .loading | default "lazy" }}"
+      crossorigin="anonymous"
+      async>
+    </script>
+  </div>
+</section>
+<script>
+(() => {
+  const host = document.querySelector('.giscus-host');
+  if (!host) return;
+  let lastTheme = null;
+  const syncTheme = () => {
+    const iframe = host.querySelector('iframe.giscus-frame');
+    if (!iframe) return;
+    const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    if (theme === lastTheme) return;
+    lastTheme = theme;
+    iframe.contentWindow?.postMessage({ giscus: { setConfig: { theme } } }, 'https://giscus.app');
+  };
+  const observer = new MutationObserver(syncTheme);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  window.addEventListener('message', (event) => {
+    if (event.origin === 'https://giscus.app') syncTheme();
+  });
+})();
+</script>
+{{- end -}}
+{{- end -}}

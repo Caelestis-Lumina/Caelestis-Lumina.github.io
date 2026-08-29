@@ -2,6 +2,9 @@
 title = "[控制] 基础概念"
 date = 2026-02-18T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["控制"]
 tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 +++

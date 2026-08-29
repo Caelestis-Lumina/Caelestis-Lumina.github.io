@@ -2,6 +2,9 @@
 title = "[Docker] 解决幽灵容器"
 date = 2026-02-18T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["Docker"]
 tags = ["容器", "Docker", "Linux"]
 +++

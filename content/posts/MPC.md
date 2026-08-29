@@ -2,6 +2,9 @@
 title = "[MPC] 模型预测控制的数学推导"
 date = 2026-08-29T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["控制", "控制/算法"]
 tags = ["控制", "机器人"]
 +++

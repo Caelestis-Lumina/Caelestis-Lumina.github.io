@@ -1,0 +1,22 @@
+{{- $status := .Params.article_status | default "permanent" -}}
+{{- $scope := .Params.applicable_versions | default (slice "all") -}}
+{{- $labels := slice -}}
+{{- range $scope -}}
+  {{- if eq . "all" -}}
+    {{- $labels = $labels | append "All versions（全部版本）" -}}
+  {{- else -}}
+    {{- $labels = $labels | append . -}}
+  {{- end -}}
+{{- end -}}
+<div class="article-status" aria-label="Article status and version scope">
+  <span class="article-status-item article-status-state">
+    <i aria-hidden="true"></i>
+    {{- if eq $status "permanent" -}}
+      Permanent <span lang="zh-CN">（永久）</span>
+    {{- else -}}
+      {{ $status | humanize }}
+    {{- end -}}
+  </span>
+  <span class="article-status-divider" aria-hidden="true"></span>
+  <span class="article-status-item">Applies to: {{ delimit $labels ", " }}</span>
+</div>

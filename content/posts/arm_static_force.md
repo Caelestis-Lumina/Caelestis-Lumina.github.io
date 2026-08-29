@@ -2,6 +2,9 @@
 title = "[机械臂] 速度与静力的分析"
 date = 2026-02-18T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["控制", "控制/机器人学", "控制/机器人学/静力学"]
 tags = ["静力学", "机器人", "机械臂"]
 +++

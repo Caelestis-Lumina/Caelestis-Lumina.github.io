@@ -2,6 +2,9 @@
 title = "[理论力学] 惯性张量"
 date = 2026-02-18T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["物理", "物理/理论力学"]
 tags = ["动力学", "理论力学"]
 +++

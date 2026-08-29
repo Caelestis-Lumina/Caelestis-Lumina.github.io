@@ -7,7 +7,10 @@
     </button>
   </div>
   <div class="post-toc-body" id="post-toc-body">
-    {{ .TableOfContents }}
+    <div class="toc-progress-shell">
+      {{ .TableOfContents }}
+      <span class="toc-progress-indicator" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span>
+    </div>
   </div>
 </aside>
 {{- end -}}

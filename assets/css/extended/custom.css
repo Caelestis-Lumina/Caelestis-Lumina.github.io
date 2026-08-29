@@ -289,9 +289,28 @@ body {
   padding: 0.12rem 0;
 }
 
+.toc-progress-shell {
+  position: relative;
+}
+
 .post-toc-body #TableOfContents {
   border-inline-start: 1px solid var(--border);
   padding-inline-start: 0.25rem;
+}
+
+.toc-progress-indicator {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  z-index: 2;
+  width: 3px;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cyan), var(--accent));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 10%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 28%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
 }
 
 .column-tree-root summary {
@@ -323,28 +342,10 @@ body {
   font-weight: 700;
 }
 
-.post-toc-body a::before {
-  content: "";
-  position: absolute;
-  top: 0.2rem;
-  bottom: 0.2rem;
-  left: -0.61rem;
-  width: 2px;
-  border-radius: 999px;
-  background: transparent;
-  transform: scaleY(0.3);
-  transition: background 0.18s ease, transform 0.18s ease;
-}
-
 .post-toc-body a.is-active {
-  background: color-mix(in srgb, var(--cyan-soft) 82%, transparent);
+  background: transparent;
   color: var(--cyan-strong);
   font-weight: 700;
-}
-
-.post-toc-body a.is-active::before {
-  background: linear-gradient(var(--cyan), var(--accent));
-  transform: scaleY(1);
 }
 
 .post-single,
@@ -377,6 +378,77 @@ body {
 .home-recent-meta {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+.article-status {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.48rem;
+  margin-top: 0.8rem;
+  border: 1px solid color-mix(in srgb, var(--cyan) 24%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cyan-soft) 50%, transparent);
+  color: var(--secondary);
+  padding: 0.38rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.article-status-item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.article-status-state {
+  color: var(--cyan-strong);
+  font-weight: 750;
+}
+
+.article-status-state i {
+  width: 0.46rem;
+  height: 0.46rem;
+  flex: 0 0 auto;
+  margin-right: 0.38rem;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cyan) 13%, transparent);
+}
+
+.article-status-divider {
+  width: 1px;
+  height: 0.9rem;
+  background: var(--border);
+}
+
+.comments-section {
+  margin-top: 2.4rem;
+  border-top: 1px solid var(--border);
+  padding-top: 2rem;
+}
+
+.comments-heading {
+  margin-bottom: 1.2rem;
+}
+
+.comments-heading h2 {
+  margin: 0.18rem 0 0.45rem;
+  color: var(--primary);
+  font-size: clamp(1.25rem, 3vw, 1.6rem);
+  letter-spacing: -0.025em;
+}
+
+.comments-heading > p:last-child {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 0.92rem;
+}
+
+.giscus-host {
+  min-height: 9rem;
 }
 
 .post-content {

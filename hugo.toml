@@ -28,6 +28,29 @@ ShowWordCount = true
 DateFormat = "2006-01-02"
 ShowRssButtonInSectionTermList = false
 
+[params.assets]
+favicon = "/favicon.svg"
+favicon16x16 = "/favicon.svg"
+favicon32x32 = "/favicon.svg"
+apple_touch_icon = "/favicon.svg"
+safari_pinned_tab = "/favicon.svg"
+theme_color = "#111318"
+msapplication_TileColor = "#111318"
+
+[params.giscus]
+enabled = true
+repo = "Caelestis-Lumina/Caelestis-Lumina.github.io"
+repoId = "R_kgDOQn6aDg"
+category = "General"
+categoryId = "DIC_kwDOQn6aDs4DEeFv"
+mapping = "pathname"
+strict = "0"
+reactionsEnabled = "1"
+emitMetadata = "0"
+inputPosition = "top"
+lang = "en"
+loading = "lazy"
+
 [params.homeInfoParams]
 Title = "Technical Notes & Engineering Practice"
 Content = "Derivations, lessons learned, and practical solutions across programming, AI, robotics, and systems engineering."

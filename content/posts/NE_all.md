@@ -2,6 +2,9 @@
 title = "[机械臂动力学] 牛顿-欧拉递推动力学方程——汇总"
 date = 2026-02-18T00:00:00+08:00
 draft = false
+article_status = "permanent"
+applicable_versions = ["all"]
+comments = true
 columns = ["控制", "控制/机器人学", "控制/机器人学/动力学"]
 tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 +++
