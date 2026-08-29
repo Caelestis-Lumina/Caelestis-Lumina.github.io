@@ -17,11 +17,11 @@
 </head>
 
 {{- if (or (ne .Kind `page` ) (eq .Layout `archives`) (eq .Layout `search`)) }}
-<body class="list" id="top">
+<body class="list{{ if .IsHome }} home-page{{ end }}" id="top">
 {{- else }}
 <body id="top">
 {{- end }}
-    <a class="skip-link" href="#main-content">跳到正文</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
     {{ partialCached "header.html" . .Page -}}
     <div class="site-shell">
         {{ partial "post_toc_sidebar.html" . }}

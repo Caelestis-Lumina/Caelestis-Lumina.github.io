@@ -24,11 +24,11 @@
       <li class="column-index-item{{ if gt $childCount 0 }} has-children{{ end }}">
         {{- if gt $childCount 0 }}
         <details class="column-index-branch" open>
-          <summary class="column-index-row" title="展开或折叠 {{ $label }} 的下级专栏">
+          <summary class="column-index-row" title="Expand or collapse child columns under {{ $label }}">
             <span class="column-index-chevron" aria-hidden="true"></span>
             <span class="column-index-label">{{ $label }}</span>
-            <span class="column-index-count">{{ $term.Count }} 篇</span>
-            <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="进入 {{ $label }} 专栏">进入</a>
+            <span class="column-index-count">{{ $term.Count }} posts</span>
+            <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
           </summary>
           {{- partial "column_tree.html" (dict "Terms" $terms "Parent" $name "Depth" (len $parts)) -}}
         </details>
@@ -36,8 +36,8 @@
         <div class="column-index-row is-leaf">
           <span class="column-index-leaf-mark" aria-hidden="true"></span>
           <a class="column-index-link" href="{{ $term.Page.RelPermalink }}">{{ $label }}</a>
-          <span class="column-index-count">{{ $term.Count }} 篇</span>
-          <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="进入 {{ $label }} 专栏">进入</a>
+          <span class="column-index-count">{{ $term.Count }} posts</span>
+          <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
         </div>
         {{- end }}
       </li>

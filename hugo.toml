@@ -1,8 +1,8 @@
 baseURL = "https://caelestis-lumina.github.io/"
-languageCode = "zh-cn"
+locale = "en-US"
 title = "Caelestis Lumina"
 theme = "PaperMod"
-defaultContentLanguage = "zh"
+defaultContentLanguage = "en"
 hasCJKLanguage = true
 enableRobotsTXT = true
 
@@ -15,7 +15,7 @@ column = "columns"
 
 [params]
 author = "Caelestis-Lumina"
-description = "分享编程语言、人工智能、机器人等相关技术栈"
+description = "Notes on programming, artificial intelligence, robotics, and engineering practice."
 mainSections = ["posts"]
 defaultTheme = "auto"
 disableThemeToggle = false
@@ -26,11 +26,11 @@ ShowBreadCrumbs = true
 ShowPostNavLinks = true
 ShowWordCount = true
 DateFormat = "2006-01-02"
-ShowRssButtonInSectionTermList = true
+ShowRssButtonInSectionTermList = false
 
 [params.homeInfoParams]
-Title = "技术笔记与工程实践"
-Content = "记录编程、人工智能、机器人与工程实践中的推导、踩坑和解决方案。"
+Title = "Technical Notes & Engineering Practice"
+Content = "Derivations, lessons learned, and practical solutions across programming, AI, robotics, and systems engineering."
 
 [params.fuseOpts]
 isCaseSensitive = false
@@ -43,31 +43,31 @@ keys = ["title", "permalink", "summary", "content"]
 
 [[menu.main]]
 identifier = "posts"
-name = "文章"
+name = "Posts"
 url = "/posts/"
 weight = 10
 
 [[menu.main]]
 identifier = "columns"
-name = "专栏"
+name = "Columns"
 url = "/columns/"
 weight = 20
 
 [[menu.main]]
 identifier = "tags"
-name = "标签"
+name = "Tags"
 url = "/tags/"
 weight = 30
 
 [[menu.main]]
 identifier = "search"
-name = "搜索"
+name = "Search"
 url = "/search/"
 weight = 40
 
 [[menu.main]]
 identifier = "about"
-name = "关于"
+name = "About"
 url = "/about/"
 weight = 50
 

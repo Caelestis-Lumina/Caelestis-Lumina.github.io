@@ -47,17 +47,17 @@
 <section class="term-children">
   <div class="term-section-heading">
     <p class="home-section-label">Next level</p>
-    <h2>下级专栏结构</h2>
+    <h2>Child column structure</h2>
   </div>
-  <div class="column-index column-index-subtree" aria-label="{{ $current }} 的下级专栏">
+  <div class="column-index column-index-subtree" aria-label="Child columns under {{ $current }}">
     <div class="column-index-toolbar">
       <div>
-        <span class="column-index-toolbar-title">{{ index (split $current "/") (sub $currentDepth 1) }} 的下级</span>
-        <span class="column-index-toolbar-hint">可逐级展开</span>
+        <span class="column-index-toolbar-title">Under {{ index (split $current "/") (sub $currentDepth 1) }}</span>
+        <span class="column-index-toolbar-hint">Expand level by level（逐级展开）</span>
       </div>
-      <div class="column-index-actions" aria-label="下级专栏树控制">
-        <button type="button" data-column-tree-action="expand">全部展开</button>
-        <button type="button" data-column-tree-action="collapse">全部折叠</button>
+      <div class="column-index-actions" aria-label="Child column tree controls">
+        <button type="button" data-column-tree-action="expand">Expand all</button>
+        <button type="button" data-column-tree-action="collapse">Collapse all</button>
       </div>
     </div>
     {{- partial "column_tree.html" (dict "Terms" site.Taxonomies.columns.Alphabetical "Parent" $current "Depth" $currentDepth) -}}
@@ -68,7 +68,7 @@
 <section>
   <div class="term-section-heading">
     <p class="home-section-label">Articles</p>
-    <h2>本专栏文章</h2>
+    <h2>Posts in this column</h2>
   </div>
   {{- if gt (len $posts) 0 }}
   <div class="term-post-list">
@@ -86,13 +86,13 @@
     {{- end }}
   </div>
   {{- else }}
-  <p>该分栏下暂无文章。</p>
+  <p>No posts are available in this column yet.</p>
   {{- end }}
 </section>
 
 {{- else if eq .Type "tags" }}
 <section>
-  <h2>标签相关文章</h2>
+  <h2>Posts with this tag</h2>
   {{- if gt (len .Pages) 0 }}
   <div class="term-post-list">
     {{- range .Pages.ByDate.Reverse }}
@@ -112,7 +112,7 @@
           {{- end }}
         {{- end }}
         <p class="entry-columns">
-          归属专栏：
+          Column:
           {{- with site.GetPage (printf "/columns/%s" $deepest) }}
           <a href="{{ .RelPermalink }}">{{ $deepest }}</a>
           {{- else }}
@@ -130,7 +130,7 @@
     {{- end }}
   </div>
   {{- else }}
-  <p>该标签下暂无文章。</p>
+  <p>No posts are available for this tag yet.</p>
   {{- end }}
 </section>
 

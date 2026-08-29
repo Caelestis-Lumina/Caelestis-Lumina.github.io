@@ -27,7 +27,7 @@
       tocPanel.classList.toggle('is-collapsed', collapsed);
       shell.classList.toggle('is-toc-collapsed', collapsed);
       tocToggle.setAttribute('aria-expanded', String(!collapsed));
-      tocToggle.setAttribute('aria-label', `${collapsed ? '展开' : '折叠'}文章目录`);
+      tocToggle.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} table of contents`);
       if (persist) safeSet(tocStateKey, String(collapsed));
     };
 

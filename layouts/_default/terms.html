@@ -3,19 +3,18 @@
 <header class="page-header column-index-header">
   {{- partial "breadcrumbs.html" . }}
   <p class="home-section-label">Knowledge Map</p>
-  <h1>专栏</h1>
-  <p class="post-description">点击专栏行展开层级；使用“进入”打开当前层级。</p>
+  <h1>Columns</h1>
 </header>
 
-<section class="column-index" aria-label="专栏层级">
+<section class="column-index" aria-label="Column hierarchy">
   <div class="column-index-toolbar">
     <div>
-      <span class="column-index-toolbar-title">全部专栏</span>
-      <span class="column-index-toolbar-hint">{{ len .Data.Terms }} 个层级节点</span>
+      <span class="column-index-toolbar-title">All columns</span>
+      <span class="column-index-toolbar-hint">{{ len .Data.Terms }} hierarchy nodes</span>
     </div>
-    <div class="column-index-actions" aria-label="专栏树控制">
-      <button type="button" data-column-tree-action="expand">全部展开</button>
-      <button type="button" data-column-tree-action="collapse">全部折叠</button>
+    <div class="column-index-actions" aria-label="Column tree controls">
+      <button type="button" data-column-tree-action="expand">Expand all</button>
+      <button type="button" data-column-tree-action="collapse">Collapse all</button>
     </div>
   </div>
   {{- partial "column_tree.html" (dict "Terms" .Data.Terms.Alphabetical "Parent" "" "Depth" 0) -}}

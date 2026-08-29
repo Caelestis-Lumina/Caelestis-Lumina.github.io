@@ -2,8 +2,8 @@
 {{- if $path -}}
 {{- $parts := split $path "/" -}}
 {{- $current := "" -}}
-<nav class="column-path" aria-label="专栏路径">
-  <a class="column-path-root" href="{{ "/columns/" | relURL }}">专栏</a>
+<nav class="column-path" aria-label="Column path">
+  <a class="column-path-root" href="{{ "/columns/" | relURL }}">Columns</a>
   {{- range $index, $part := $parts }}
     {{- $current = cond (eq $current "") $part (printf "%s/%s" $current $part) -}}
     <span class="column-path-separator" aria-hidden="true">/</span>

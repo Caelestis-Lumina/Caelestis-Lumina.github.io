@@ -6,10 +6,10 @@
   {{- $currentColumn = index .Params.columns 0 -}}
 {{- end -}}
 
-<aside class="column-sidebar reading-rail" aria-label="分栏导航" data-reading-rail="column">
+<aside class="column-sidebar reading-rail" aria-label="Column navigation" data-reading-rail="column">
   <div class="reading-rail-header">
-    <span class="reading-rail-title">分栏</span>
-    <button class="column-sidebar-toggle reading-rail-toggle" type="button" aria-expanded="true" aria-controls="column-tree" aria-label="折叠分栏导航">
+    <span class="reading-rail-title">Columns</span>
+    <button class="column-sidebar-toggle reading-rail-toggle" type="button" aria-expanded="true" aria-controls="column-tree" aria-label="Collapse column navigation">
       <span class="reading-rail-toggle-icon" aria-hidden="true"></span>
     </button>
   </div>
@@ -25,7 +25,7 @@
       {{- end }}
     </ul>
     {{- else }}
-    <p class="column-sidebar-empty">暂无分栏，请先在文章 front matter 中设置 <code>columns</code>。</p>
+    <p class="column-sidebar-empty">No columns yet. Add <code>columns</code> to a post's front matter.</p>
     {{- end }}
     <nav class="column-tree-nav" data-current="{{ $currentColumn }}"></nav>
   </div>
