@@ -16,6 +16,7 @@
     {{- partial "head.html" . }}
 </head>
 
+{{- $hasToc := and (eq .Kind "page") (.Param "ShowToc") (gt (len .Fragments.Headings) 0) -}}
 {{- if (or (ne .Kind `page` ) (eq .Layout `archives`) (eq .Layout `search`)) }}
 <body class="list{{ if .IsHome }} home-page{{ end }}" id="top">
 {{- else }}
@@ -23,7 +24,7 @@
 {{- end }}
     <a class="skip-link" href="#main-content">Skip to content</a>
     {{ partialCached "header.html" . .Page -}}
-    <div class="site-shell">
+    <div class="site-shell{{ if not $hasToc }} has-no-toc{{ end }}">
         {{ partial "post_toc_sidebar.html" . }}
         {{ partial "left_sidebar_controller.html" . }}
         <main class="main" id="main-content">
