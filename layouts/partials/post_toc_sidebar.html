@@ -1,13 +1,13 @@
-{{- if and (eq .Kind "page") (.Param "ShowToc") -}}
-<aside class="post-toc-sidebar is-hidden" aria-label="文章目录">
-  <button class="post-toc-toggle" type="button" aria-expanded="false">
-    文章目录
-  </button>
-  <div class="post-toc-body">
-    <nav id="TableOfContents"></nav>
+{{- if and (eq .Kind "page") (.Param "ShowToc") (gt (len .Fragments.Headings) 0) -}}
+<aside class="post-toc-sidebar reading-rail" aria-label="文章目录" data-reading-rail="toc">
+  <div class="reading-rail-header">
+    <span class="reading-rail-title">本文目录</span>
+    <button class="post-toc-toggle reading-rail-toggle" type="button" aria-expanded="true" aria-controls="post-toc-body" aria-label="折叠文章目录">
+      <span class="reading-rail-toggle-icon" aria-hidden="true"></span>
+    </button>
+  </div>
+  <div class="post-toc-body" id="post-toc-body">
+    {{ .TableOfContents }}
   </div>
 </aside>
-<button class="post-toc-fab" type="button" aria-expanded="false" aria-label="展开文章目录">
-  目录
-</button>
 {{- end -}}

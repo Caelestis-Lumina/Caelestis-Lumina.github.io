@@ -1,271 +1,126 @@
 <script>
 (() => {
   const init = () => {
-  const treeNav = document.querySelector('.column-tree-nav');
-  const columnPanel = document.querySelector('.column-sidebar');
-  const columnToggle = document.querySelector('.column-sidebar-toggle');
-  const columnFab = document.querySelector('.column-sidebar-fab');
-  const tocPanel = document.querySelector('.post-toc-sidebar');
-  const tocToggle = document.querySelector('.post-toc-toggle');
-  const tocFab = document.querySelector('.post-toc-fab');
-  const activePanelKey = 'cl_left_active_panel';
+    const shell = document.querySelector('.site-shell');
+    const tocPanel = document.querySelector('.post-toc-sidebar');
+    const tocToggle = document.querySelector('.post-toc-toggle');
+    const compactQuery = window.matchMedia('(max-width: 1023px)');
+    const tocStateKey = 'cl_toc_rail_collapsed';
 
-  if (!columnPanel || !columnToggle || !columnFab) return;
+    if (!shell) return;
+    shell.classList.toggle('has-no-toc', !tocPanel);
 
-  const buildPostTocFromHeadings = () => {
-    if (!tocPanel) return;
-    const tocRoot = tocPanel.querySelector('#TableOfContents');
-    if (!tocRoot) return;
-    tocRoot.innerHTML = '';
-
-    const headings = Array.from(document.querySelectorAll('.post-content h2[id], .post-content h3[id], .post-content h4[id]'));
-    if (!headings.length) return;
-
-    const rootList = document.createElement('ul');
-    const listStack = [rootList];
-    let currentLevel = 2;
-
-    headings.forEach((heading) => {
-      const level = Number(heading.tagName.replace('H', ''));
-      if (!Number.isFinite(level)) return;
-
-      while (level > currentLevel) {
-        const parentList = listStack[listStack.length - 1];
-        let lastItem = parentList.lastElementChild;
-        if (!lastItem) {
-          lastItem = document.createElement('li');
-          parentList.appendChild(lastItem);
-        }
-        const nestedList = document.createElement('ul');
-        lastItem.appendChild(nestedList);
-        listStack.push(nestedList);
-        currentLevel += 1;
-      }
-
-      while (level < currentLevel && listStack.length > 1) {
-        listStack.pop();
-        currentLevel -= 1;
-      }
-
-      const li = document.createElement('li');
-      const link = document.createElement('a');
-      link.href = `#${encodeURIComponent(heading.id)}`;
-      const clone = heading.cloneNode(true);
-      clone.querySelectorAll('a.anchor').forEach((n) => n.remove());
-      link.innerHTML = clone.innerHTML;
-      link.setAttribute('aria-label', clone.textContent || heading.textContent || '');
-      li.appendChild(link);
-      listStack[listStack.length - 1].appendChild(li);
-    });
-
-    tocRoot.appendChild(rootList);
-  };
-
-  const hasTocEntries = () => !!(tocPanel && tocPanel.querySelector('#TableOfContents li'));
-
-  const safeGet = (k) => {
-    try { return localStorage.getItem(k); } catch (e) { return null; }
-  };
-  const safeSet = (k, v) => {
-    try { localStorage.setItem(k, v); } catch (e) {}
-  };
-
-  const syncTocLabelFromHeadings = () => {
-    if (!tocPanel) return;
-    const tocLinks = tocPanel.querySelectorAll('#TableOfContents a[href^="#"]');
-    if (!tocLinks.length) return;
-
-    tocLinks.forEach((link) => {
-      const raw = link.getAttribute('href');
-      if (!raw || raw.length < 2) return;
-      const targetId = decodeURIComponent(raw.slice(1));
-      const heading = document.getElementById(targetId);
-      if (!heading) return;
-
-      const clone = heading.cloneNode(true);
-      clone.querySelectorAll('a.anchor').forEach((n) => n.remove());
-      link.innerHTML = clone.innerHTML;
-      link.setAttribute('aria-label', clone.textContent || link.textContent || '');
-    });
-  };
-
-  const typesetMathInToc = () => {
-    if (!tocPanel || tocPanel.classList.contains('is-hidden')) return;
-    const tocContainer = tocPanel.querySelector('.post-toc-body');
-    if (!tocContainer) return;
-
-    const run = () => {
-      syncTocLabelFromHeadings();
-      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-        window.MathJax.typesetClear && window.MathJax.typesetClear([tocContainer]);
-        window.MathJax.typesetPromise([tocContainer]).catch(() => {});
-      }
+    const safeGet = (key) => {
+      try { return localStorage.getItem(key); } catch (_) { return null; }
+    };
+    const safeSet = (key, value) => {
+      try { localStorage.setItem(key, value); } catch (_) {}
     };
 
-    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-      run();
-      return;
-    }
+    let tocCollapsed = (() => {
+      const stored = safeGet(tocStateKey);
+      return stored === null ? compactQuery.matches : stored === 'true';
+    })();
 
-    let retry = 0;
-    const timer = setInterval(() => {
-      retry += 1;
-      if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-        clearInterval(timer);
-        run();
-      } else if (retry >= 20) {
-        clearInterval(timer);
-        syncTocLabelFromHeadings();
-      }
-    }, 150);
-  };
+    const setTocState = (collapsed, persist = true) => {
+      if (!tocPanel || !tocToggle) return;
+      tocPanel.classList.toggle('is-collapsed', collapsed);
+      shell.classList.toggle('is-toc-collapsed', collapsed);
+      tocToggle.setAttribute('aria-expanded', String(!collapsed));
+      tocToggle.setAttribute('aria-label', `${collapsed ? '展开' : '折叠'}文章目录`);
+      if (persist) safeSet(tocStateKey, String(collapsed));
+    };
 
-  buildPostTocFromHeadings();
-
-  const applyPanelState = (active) => {
-    const tocAvailable = hasTocEntries();
-    const tocActive = active === 'toc' && tocAvailable;
-    const columnActive = active === 'column';
-    const noneActive = active === 'none';
-    const useColumn = columnActive;
-    const useToc = tocActive;
-
-    columnPanel.classList.toggle('is-hidden', !useColumn);
-    columnToggle.setAttribute('aria-expanded', String(useColumn));
-    columnFab.classList.toggle('is-visible', !useColumn);
-
-    if (tocPanel && tocToggle && tocFab) {
-      tocPanel.classList.toggle('is-hidden', !useToc);
-      tocToggle.setAttribute('aria-expanded', String(useToc));
-      tocFab.classList.toggle('is-visible', (!useToc && tocAvailable) || (noneActive && tocAvailable));
-      if (!tocAvailable) tocPanel.classList.add('is-hidden');
-      if (useToc) typesetMathInToc();
-    }
-
-    if (useToc) {
-      safeSet(activePanelKey, 'toc');
-    } else if (useColumn) {
-      safeSet(activePanelKey, 'column');
-    } else {
-      safeSet(activePanelKey, 'none');
-    }
-  };
-
-  let activePanel = safeGet(activePanelKey);
-  const tocAvailableOnPage = hasTocEntries();
-  if (activePanel !== 'column' && activePanel !== 'toc' && activePanel !== 'none') {
-    activePanel = tocAvailableOnPage ? 'toc' : 'column';
-  }
-  if (tocAvailableOnPage) activePanel = 'toc';
-  if (!tocAvailableOnPage && activePanel === 'toc') activePanel = 'column';
-  applyPanelState(activePanel);
-  if (activePanel === 'toc') typesetMathInToc();
-
-  columnToggle.addEventListener('click', () => {
-    const isOpen = !columnPanel.classList.contains('is-hidden');
-    applyPanelState(isOpen ? 'none' : 'column');
-  });
-  columnFab.addEventListener('click', () => applyPanelState('column'));
-  if (tocToggle) {
-    tocToggle.addEventListener('click', () => {
-      const isOpen = tocPanel && !tocPanel.classList.contains('is-hidden');
-      applyPanelState(isOpen ? 'none' : 'toc');
+    tocToggle?.addEventListener('click', () => {
+      tocCollapsed = !tocCollapsed;
+      setTocState(tocCollapsed);
     });
-  }
-  if (tocFab) tocFab.addEventListener('click', () => applyPanelState('toc'));
+    setTocState(tocCollapsed, false);
 
-  if (!treeNav) return;
-  const source = document.querySelectorAll('.column-flat-data li');
-  if (!source.length) {
-    treeNav.innerHTML = '<p class="column-sidebar-empty">暂无分栏</p>';
-    return;
-  }
+    const setupTocHighlight = () => {
+      if (!tocPanel) return;
+      const links = Array.from(tocPanel.querySelectorAll('#TableOfContents a[href^="#"]'));
+      const entries = links.map((link) => {
+        try {
+          const heading = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+          return heading ? { heading, link } : null;
+        } catch (_) {
+          return null;
+        }
+      }).filter(Boolean);
+      if (!entries.length) return;
 
-  const currentPath = (treeNav.dataset.current || '').trim();
-  const root = { children: {} };
+      let activeLink = null;
+      let ticking = false;
+      const activate = (link) => {
+        if (!link || link === activeLink) return;
+        links.forEach((item) => {
+          item.classList.toggle('is-active', item === link);
+          if (item === link) item.setAttribute('aria-current', 'location');
+          else item.removeAttribute('aria-current');
+        });
+        activeLink = link;
 
-  source.forEach((item) => {
-    const fullPath = item.dataset.path;
-    const url = item.dataset.url;
-    const count = Number(item.dataset.count || '0');
-    const parts = fullPath.split('/').filter(Boolean);
-    let cursor = root;
-    let aggregatePath = '';
+        if (!tocPanel.classList.contains('is-collapsed')) {
+          const panelRect = tocPanel.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          const headerSpace = 52;
+          if (linkRect.top < panelRect.top + headerSpace) {
+            tocPanel.scrollTop -= panelRect.top + headerSpace - linkRect.top;
+          } else if (linkRect.bottom > panelRect.bottom - 12) {
+            tocPanel.scrollTop += linkRect.bottom - panelRect.bottom + 12;
+          }
+        }
+      };
 
-    parts.forEach((part) => {
-      aggregatePath = aggregatePath ? `${aggregatePath}/${part}` : part;
-      if (!cursor.children[part]) {
-        cursor.children[part] = { label: part, path: aggregatePath, children: {} };
-      }
-      cursor = cursor.children[part];
-    });
+      const update = () => {
+        const marker = window.scrollY + Math.min(180, window.innerHeight * 0.28);
+        let current = entries[0];
+        for (const entry of entries) {
+          if (entry.heading.offsetTop <= marker) current = entry;
+          else break;
+        }
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+          current = entries[entries.length - 1];
+        }
+        activate(current.link);
+        ticking = false;
+      };
 
-    cursor.url = url;
-    cursor.count = count;
-  });
+      const requestUpdate = () => {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(update);
+      };
 
-  const isAncestorOfCurrent = (path) => currentPath && (currentPath === path || currentPath.startsWith(path + '/'));
+      links.forEach((link) => link.addEventListener('click', () => activate(link)));
+      window.addEventListener('scroll', requestUpdate, { passive: true });
+      window.addEventListener('resize', requestUpdate, { passive: true });
+      update();
+    };
 
-  const renderNode = (node) => {
-    const li = document.createElement('li');
-    const hasChildren = Object.keys(node.children).length > 0;
-    const openByDefault = isAncestorOfCurrent(node.path);
+    const setupColumnTree = () => {
+      document.querySelectorAll('.column-index').forEach((tree) => {
+        tree.querySelectorAll('.column-index-enter').forEach((link) => {
+          link.addEventListener('click', (event) => event.stopPropagation());
+        });
 
-    if (hasChildren) {
-      const details = document.createElement('details');
-      details.open = openByDefault;
-      const summary = document.createElement('summary');
-      if (node.url) {
-        const link = document.createElement('a');
-        link.href = node.url;
-        link.textContent = node.label;
-        summary.appendChild(link);
-      } else {
-        summary.textContent = node.label;
-      }
-      if (node.count) {
-        const sup = document.createElement('sup');
-        sup.textContent = ` ${node.count}`;
-        summary.appendChild(sup);
-      }
-      details.appendChild(summary);
+        tree.querySelectorAll('[data-column-tree-action]').forEach((button) => {
+          button.addEventListener('click', () => {
+            const expand = button.dataset.columnTreeAction === 'expand';
+            tree.querySelectorAll('details.column-index-branch').forEach((details) => {
+              details.open = expand;
+            });
+          });
+        });
+      });
+    };
 
-      const ul = document.createElement('ul');
-      Object.values(node.children)
-        .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
-        .forEach((child) => ul.appendChild(renderNode(child)));
-      details.appendChild(ul);
-      li.appendChild(details);
-    } else {
-      const link = document.createElement('a');
-      link.href = node.url || '#';
-      link.textContent = node.label;
-      if (node.count) {
-        const sup = document.createElement('sup');
-        sup.textContent = ` ${node.count}`;
-        link.appendChild(sup);
-      }
-      li.appendChild(link);
-    }
-
-    if (node.path === currentPath) {
-      li.classList.add('is-current-column');
-    }
-    return li;
+    setupTocHighlight();
+    setupColumnTree();
   };
 
-  const rootList = document.createElement('ul');
-  rootList.className = 'column-tree-root';
-  Object.values(root.children)
-    .sort((a, b) => a.label.localeCompare(b.label, 'zh-Hans-CN'))
-    .forEach((node) => rootList.appendChild(renderNode(node)));
-  treeNav.appendChild(rootList);
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
 </script>

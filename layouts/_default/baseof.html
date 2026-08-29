@@ -21,12 +21,12 @@
 {{- else }}
 <body id="top">
 {{- end }}
+    <a class="skip-link" href="#main-content">跳到正文</a>
     {{ partialCached "header.html" . .Page -}}
     <div class="site-shell">
-        {{ partial "column_sidebar.html" . }}
         {{ partial "post_toc_sidebar.html" . }}
         {{ partial "left_sidebar_controller.html" . }}
-        <main class="main">
+        <main class="main" id="main-content">
             {{- block "main" . }}{{ end }}
         </main>
     </div>

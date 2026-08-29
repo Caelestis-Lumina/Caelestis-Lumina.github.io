@@ -65,15 +65,21 @@
 {{- $recentPosts := first 6 (sort $allPosts "Lastmod" "desc") }}
 <section class="home-portal">
   {{- with site.Params.homeInfoParams }}
-  <section class="home-intro-topic">
-    <section class="home-intro-block">
-      <h2>{{ .Title }}</h2>
-      <p>{{ .Content }}</p>
-    </section>
-    {{- if gt (len $topTopics) 0 }}
-    <section class="home-topic-block">
-      <h2>Core Topics</h2>
-      <div class="home-topic-list">
+  <section class="home-hero" aria-labelledby="home-title">
+    <div class="home-hero-copy">
+      <p class="home-eyebrow"><span class="home-status-dot" aria-hidden="true"></span> Caelestis Lumina / Knowledge Base</p>
+      <h1 id="home-title">{{ .Title }}</h1>
+      <p class="home-lead">{{ .Content }}</p>
+      <p class="home-tech-line">Programming · AI · Robotics · Systems</p>
+      <div class="home-actions">
+        <a class="home-action home-action-primary" href="{{ "posts/" | relURL }}">浏览全部文章 <span aria-hidden="true">→</span></a>
+        <a class="home-action" href="{{ "search/" | relURL }}">搜索知识库</a>
+      </div>
+    </div>
+    <div class="home-hero-topics">
+      <p class="home-section-label">Index / 持续更新</p>
+      {{- if gt (len $topTopics) 0 }}
+      <div class="home-topic-list" aria-label="核心专栏">
         {{- range $topic := $topTopics }}
         {{- with site.GetPage (printf "/columns/%s" $topic) }}
         <a class="home-topic-chip" href="{{ .RelPermalink }}">{{ $topic }}</a>
@@ -82,39 +88,48 @@
         {{- end }}
         {{- end }}
       </div>
-    </section>
-    {{- end }}
+      {{- else }}
+      <p class="home-empty-hint">更多技术专栏正在整理中。</p>
+      {{- end }}
+    </div>
   </section>
   {{- end }}
 
-  <div class="home-portal-stats">
+  <div class="home-portal-stats" aria-label="博客概览">
     <article class="home-stat-card">
-      <h3>访问量</h3>
-      <p><span id="busuanzi_value_site_pv">-</span></p>
+      <p class="home-stat-value"><span id="busuanzi_value_site_pv">—</span></p>
+      <h2>累计访问</h2>
     </article>
     <article class="home-stat-card">
-      <h3>文章数量</h3>
-      <p>{{ len $allPosts }}</p>
+      <p class="home-stat-value">{{ len $allPosts }}</p>
+      <h2>篇文章</h2>
     </article>
     <article class="home-stat-card">
-      <h3>分栏数量</h3>
-      <p>{{ len site.Taxonomies.columns }}</p>
+      <p class="home-stat-value">{{ len site.Taxonomies.columns }}</p>
+      <h2>个专栏</h2>
     </article>
     <article class="home-stat-card">
-      <h3>标签数量</h3>
-      <p>{{ len site.Taxonomies.tags }}</p>
+      <p class="home-stat-value">{{ len site.Taxonomies.tags }}</p>
+      <h2>个标签</h2>
     </article>
   </div>
 
   <section class="home-recent-block">
-    <h2>最近更新</h2>
+    <div class="home-section-heading">
+      <div>
+        <p class="home-section-label">Recently updated</p>
+        <h2>最近更新</h2>
+      </div>
+      <a href="{{ "posts/" | relURL }}">查看全部 <span aria-hidden="true">→</span></a>
+    </div>
     <div class="home-recent-list">
       {{- range $recentPosts }}
       {{- with . }}
       <article class="home-recent-item">
+        <p class="home-recent-meta"><time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod | time.Format "2006-01-02" }}</time></p>
         <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-        <p>{{ with .Params.summary }}{{ . }}{{ else }}{{ with .Description }}{{ . }}{{ else }}{{ .Title }}{{ end }}{{ end }}</p>
-        <small>{{ .Lastmod | time.Format "2006-01-02" }}</small>
+        <p>{{ with .Params.summary }}{{ . | plainify | truncate 110 }}{{ else }}{{ with .Description }}{{ . | plainify | truncate 110 }}{{ else }}{{ .Summary | plainify | truncate 110 }}{{ end }}{{ end }}</p>
+        <a class="home-recent-link" href="{{ .RelPermalink }}" aria-label="阅读《{{ .Title }}》">阅读全文 <span aria-hidden="true">↗</span></a>
       </article>
       {{- end }}
       {{- end }}
@@ -125,7 +140,12 @@
 
 {{- if and .IsHome (gt (len site.Taxonomies.tags) 0) (eq $paginator.PageNumber 1) }}
 <section class="home-tags">
-  <h2>Tags</h2>
+  <div class="home-section-heading">
+    <div>
+      <p class="home-section-label">Browse by topic</p>
+      <h2>按标签探索</h2>
+    </div>
+  </div>
   <div class="home-tags-list">
     {{- range site.Taxonomies.tags.Alphabetical }}
     {{- $name := .Name }}

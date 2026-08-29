@@ -1,0 +1,46 @@
+{{- $terms := .Terms -}}
+{{- $parent := .Parent -}}
+{{- $depth := .Depth -}}
+<ul class="column-index-level" data-depth="{{ $depth }}">
+  {{- range $term := $terms }}
+    {{- $name := $term.Name -}}
+    {{- $parts := split $name "/" -}}
+    {{- $isDirect := false -}}
+    {{- if eq $parent "" -}}
+      {{- if eq (len $parts) 1 }}{{ $isDirect = true }}{{ end -}}
+    {{- else if and (hasPrefix $name (printf "%s/" $parent)) (eq (len $parts) (add $depth 1)) -}}
+      {{- $isDirect = true -}}
+    {{- end -}}
+    {{- if $isDirect -}}
+      {{- $label := index $parts (sub (len $parts) 1) -}}
+      {{- $childScratch := newScratch -}}
+      {{- $childScratch.Set "count" 0 -}}
+      {{- range $candidate := $terms -}}
+        {{- if and (hasPrefix $candidate.Name (printf "%s/" $name)) (eq (len (split $candidate.Name "/")) (add (len $parts) 1)) -}}
+          {{- $childScratch.Add "count" 1 -}}
+        {{- end -}}
+      {{- end -}}
+      {{- $childCount := $childScratch.Get "count" -}}
+      <li class="column-index-item{{ if gt $childCount 0 }} has-children{{ end }}">
+        {{- if gt $childCount 0 }}
+        <details class="column-index-branch" open>
+          <summary class="column-index-row" title="展开或折叠 {{ $label }} 的下级专栏">
+            <span class="column-index-chevron" aria-hidden="true"></span>
+            <span class="column-index-label">{{ $label }}</span>
+            <span class="column-index-count">{{ $term.Count }} 篇</span>
+            <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="进入 {{ $label }} 专栏">进入</a>
+          </summary>
+          {{- partial "column_tree.html" (dict "Terms" $terms "Parent" $name "Depth" (len $parts)) -}}
+        </details>
+        {{- else }}
+        <div class="column-index-row is-leaf">
+          <span class="column-index-leaf-mark" aria-hidden="true"></span>
+          <a class="column-index-link" href="{{ $term.Page.RelPermalink }}">{{ $label }}</a>
+          <span class="column-index-count">{{ $term.Count }} 篇</span>
+          <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="进入 {{ $label }} 专栏">进入</a>
+        </div>
+        {{- end }}
+      </li>
+    {{- end -}}
+  {{- end }}
+</ul>

@@ -6,10 +6,13 @@
   {{- $currentColumn = index .Params.columns 0 -}}
 {{- end -}}
 
-<aside class="column-sidebar" aria-label="分栏导航">
-  <button class="column-sidebar-toggle" type="button" aria-expanded="true" aria-controls="column-tree">
-    分栏目录
-  </button>
+<aside class="column-sidebar reading-rail" aria-label="分栏导航" data-reading-rail="column">
+  <div class="reading-rail-header">
+    <span class="reading-rail-title">分栏</span>
+    <button class="column-sidebar-toggle reading-rail-toggle" type="button" aria-expanded="true" aria-controls="column-tree" aria-label="折叠分栏导航">
+      <span class="reading-rail-toggle-icon" aria-hidden="true"></span>
+    </button>
+  </div>
   <div class="column-sidebar-body" id="column-tree">
     {{- if $termsPage }}
     <ul class="column-flat-data" hidden>
@@ -27,6 +30,3 @@
     <nav class="column-tree-nav" data-current="{{ $currentColumn }}"></nav>
   </div>
 </aside>
-<button class="column-sidebar-fab" type="button" aria-expanded="false" aria-label="展开分栏目录">
-  分栏
-</button>

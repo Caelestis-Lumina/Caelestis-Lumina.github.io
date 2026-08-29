@@ -1,4 +1,9 @@
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
+{{- if .IsHome }}
+<script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+{{- end }}
+{{- if and .IsPage (or (.Param "math") (strings.Contains .RawContent "$" ) (strings.Contains .RawContent `\[` ) (strings.Contains .RawContent `\(` )) }}
 <script>
   window.MathJax = {
     tex: {
@@ -10,4 +15,5 @@
     }
   };
 </script>
-<script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+{{- end }}

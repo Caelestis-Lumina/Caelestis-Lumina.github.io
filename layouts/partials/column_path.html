@@ -1,0 +1,17 @@
+{{- $path := .Path | default "" -}}
+{{- if $path -}}
+{{- $parts := split $path "/" -}}
+{{- $current := "" -}}
+<nav class="column-path" aria-label="专栏路径">
+  <a class="column-path-root" href="{{ "/columns/" | relURL }}">专栏</a>
+  {{- range $index, $part := $parts }}
+    {{- $current = cond (eq $current "") $part (printf "%s/%s" $current $part) -}}
+    <span class="column-path-separator" aria-hidden="true">/</span>
+    {{- with site.GetPage (printf "/columns/%s" $current) }}
+    <a href="{{ .RelPermalink }}"{{ if eq $index (sub (len $parts) 1) }} aria-current="page"{{ end }}>{{ $part }}</a>
+    {{- else }}
+    <span>{{ $part }}</span>
+    {{- end }}
+  {{- end }}
+</nav>
+{{- end -}}

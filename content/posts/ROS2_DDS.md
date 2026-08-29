@@ -2,7 +2,7 @@
 title = "【ROS2】Cyclone DDS C语言 API详解"
 date = 2026-02-18T00:00:00+08:00
 draft = false
-columns = ["控制/系统架构/ROS2"]
+columns = ["控制", "控制/系统架构", "控制/系统架构/ROS2"]
 tags = ["ROS2", "机器人", "DDS"]
 +++
 

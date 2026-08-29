@@ -16,6 +16,9 @@ column = "columns"
 [params]
 author = "Caelestis-Lumina"
 description = "分享编程语言、人工智能、机器人等相关技术栈"
+mainSections = ["posts"]
+defaultTheme = "auto"
+disableThemeToggle = false
 ShowReadingTime = true
 ShowCodeCopyButtons = true
 ShowToc = true
@@ -23,34 +26,50 @@ ShowBreadCrumbs = true
 ShowPostNavLinks = true
 ShowWordCount = true
 DateFormat = "2006-01-02"
+ShowRssButtonInSectionTermList = true
 
 [params.homeInfoParams]
-Title = "Welcome to CL's Blog"
-Content = "这里记录 Programming Language、AI、Robotics 等技术学习与实践。"
+Title = "技术笔记与工程实践"
+Content = "记录编程、人工智能、机器人与工程实践中的推导、踩坑和解决方案。"
+
+[params.fuseOpts]
+isCaseSensitive = false
+shouldSort = true
+location = 0
+distance = 1000
+threshold = 0.3
+minMatchCharLength = 2
+keys = ["title", "permalink", "summary", "content"]
 
 [[menu.main]]
 identifier = "posts"
-name = "Articles"
+name = "文章"
 url = "/posts/"
 weight = 10
 
 [[menu.main]]
 identifier = "columns"
-name = "Columns"
+name = "专栏"
 url = "/columns/"
-weight = 30
+weight = 20
 
 [[menu.main]]
 identifier = "tags"
-name = "Tags"
+name = "标签"
 url = "/tags/"
+weight = 30
+
+[[menu.main]]
+identifier = "search"
+name = "搜索"
+url = "/search/"
 weight = 40
 
 [[menu.main]]
 identifier = "about"
-name = "About"
+name = "关于"
 url = "/about/"
-weight = 20
+weight = 50
 
 [markup]
   [markup.goldmark]
