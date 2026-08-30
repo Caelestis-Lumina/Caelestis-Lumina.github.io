@@ -1,6 +1,6 @@
 +++
-title = "[MPC] 模型预测控制的数学推导"
-date = 2026-08-29T00:00:00+08:00
+title = "[MPC] 模型预测控制公式的数学推导"
+date = 2026-08-30T20:00:00+08:00
 draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
@@ -20,7 +20,7 @@ Q=\begin{bmatrix} q1 && && && \\ && q2 && && \\ && &&  ... &&\\  && && && q_n \e
 $$
 一般来说，优化目标是找到 $Q$ 使得:
 $$
-min(z^T Q z + C^T z)
+min(z^T Q z + C^T z) \tag{*}
 $$
 
 ### 基本定义
@@ -35,6 +35,7 @@ $$
 
     这里和 Kalman Filter不同的是，KF通常只外推一步，但是MPC通常会外推多步，这个步数我们称为 `预测区间 Predictive Horizon` ，我们用 $N$ 表示
 * 开始预测
+
     想象一下，我们通过当前系统状态和系统输入 通过模型得到下一个系统状态，然后配合下一个系统输入得到下下个系统状态，以此类推，一共推N次；于是我们就会得到一系列的系统状态和系统输入，并且做出如下定义：
 $$X_k=\begin{bmatrix} x(k \mid k) \\ x(k+1 \mid k) \\ x(k+2 \mid k)\\...\\ x(k+N \mid k) \end{bmatrix}\tag{1}$$
 以及 
@@ -100,7 +101,44 @@ $$X_k=Mx_k+CU_k \tag{6}$$
 记住该公式的含义是 **从系统初始状态开始，依次使用$U_k$作为系统输入，经过A和B两种矩阵的长期作用后，依次得到$X_k$中的状态值**
 
 进一步的，我们对代价函数也做一些改造
-我们将代价函数J中的`过程误差加权和`项展开，连带着最后的`终端误差`项，即：
-$$\sum^{N-1}_{i=0}x(k+i \mid k)^T Q x(k+i \mid k)+\ x(k+N \mid k)^T F x(k+N \mid k)=\\
-\begin{bmatrix} x(k \mid k) \\ x(k+1 \mid k) \\ ...\\ x(k+N \mid k) \end{bmatrix}^T \begin{bmatrix} Q && && && \\ && Q && && \\ && &&  ... &&\\  && && && F \end{bmatrix} \begin{bmatrix} x(k \mid k) \\ x(k+1 \mid k) \\ ...\\ x(k+N \mid k) \end{bmatrix}
+我们将代价函数J中的`过程误差加权和`项展开，连带着最后的`终端误差加权和`项，即：
+$$\sum^{N-1}_{i=0}x(k+i \mid k)^T Q x(k+i \mid k)+\ x(k+N \mid k)^T F x(k+N \mid k)\\
+=\begin{bmatrix} x(k \mid k) \\ x(k+1 \mid k) \\ ...\\ x(k+N \mid k) \end{bmatrix}^T \begin{bmatrix} Q && && && \\ && Q && && \\ && &&  ... &&\\  && && && F \end{bmatrix} \begin{bmatrix} x(k \mid k) \\ x(k+1 \mid k) \\ ...\\ x(k+N \mid k) \end{bmatrix}\\
+=X_k^T \bar{Q} X_k
 $$
+同理：
+$$
+\sum^{N-1}_{i=0}u(k+i \mid k)^T R u(k+i \mid k)=U^T_k \bar{R} U_k
+$$
+整合后有：
+$$
+J=X_k^T \bar{Q} X_k+U^T_k \bar{R} U_k \tag{7}
+$$
+将式(6)代入式(7)中，则有
+$$
+J=(Mx_k+CU_k)^T\bar{Q}(Mx_k+CU_k)+U^T_k \bar{R} U_k\\
+=(x_k^T M^T + U_k^T C^T)\bar{Q}(Mx_k+CU_k)+U^T_k \bar{R} U_k\\
+=x_k^T M^T \bar{Q} Mx_k + x_k^T M^T \bar{Q} CU_k + U_k^T C^T\bar{Q}Mx_k +  U_k^T C^T\bar{Q}CU_k + U^T_k \bar{R} U_k \tag{8}
+$$
+不难发现，代价函数的输出J是一个数值，这就意味着式(8)中的每一项都是一个值
+此外，众所周知，标量的转置是它本身，因此，式(8)中的第二和第三项的值应当相同（互为转置），则有：
+$$
+J=x_k^T M^T \bar{Q} Mx_k + 2x_k^T M^T \bar{Q} CU_k +  U_k^T C^T\bar{Q}CU_k + U^T_k \bar{R} U_k \tag{9}
+$$
+(最后两项可以用分配律整合) 令
+$$
+G=M^T \bar{Q} Mx_k\\
+E=M^T \bar{Q} C \\
+H=C^T \bar{Q}​C+\bar{R}
+$$
+将上述的令作代入式(9)可得
+$$
+J=x_k^T G x_k + 2x_k^T E U_k +  U_k^T H U_k \tag{10}
+$$
+我这里把式(\*)再抄下来
+$$
+min(z^T Q z + C^T z) \tag{*}
+$$
+可以看到式(10)中$U_k$是自变量，$x_k$是由k时刻决定的常量，因此其中第一项是常量，对$min \ J$没有影响
+再看其他两项，对比式(\*)可知：
+式(10)中的第三项对应式(\*)中的第一项；式(10)中的第二项对应式(\*)中的第二项
