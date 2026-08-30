@@ -6,7 +6,6 @@ article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
 description = "考虑到cpp较为复杂的内存管理机制，为了方便管理实例的生命周期，cpp引入了智能指针的机制"
-columns = ["软件工程", "软件工程/C++", "软件工程/C++/内存管理"]
 tags = ["C++", "内存机制"]
 +++
 

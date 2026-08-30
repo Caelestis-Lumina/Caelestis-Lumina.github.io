@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["机器人学", "机器人学/静力学"]
 tags = ["静力学", "机器人", "机械臂"]
 +++
 

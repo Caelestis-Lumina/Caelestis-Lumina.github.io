@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["规划", "规划/轨迹规划", "规划/轨迹规划/时间参数化与插值"]
 tags = []
 +++
 

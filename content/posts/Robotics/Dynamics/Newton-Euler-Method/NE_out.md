@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["机器人学", "机器人学/动力学", "机器人学/动力学/牛顿-欧拉法"]
 tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 +++
 
@@ -14,7 +13,7 @@ tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 
 该问题属于**矢量微分与坐标投影**
 
-会用到 传输定理，我的[另一篇博客]({{< relref "posts/fundamentals.md" >}})已有记录
+会用到传输定理，我的[另一篇博客](/posts/fundamentals/)已有记录
 ## 核心思想
 
 在处理刚体运动学与动力学方程时，严格区分**物理矢量 (Physical Vector)** 与 **代数表示 (Algebraic Representation)** 是至关重要的。

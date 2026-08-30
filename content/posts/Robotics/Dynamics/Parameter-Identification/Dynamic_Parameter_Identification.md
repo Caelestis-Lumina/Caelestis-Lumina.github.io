@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["机器人学", "机器人学/动力学", "机器人学/动力学/参数辨识"]
 tags = []
 +++
 

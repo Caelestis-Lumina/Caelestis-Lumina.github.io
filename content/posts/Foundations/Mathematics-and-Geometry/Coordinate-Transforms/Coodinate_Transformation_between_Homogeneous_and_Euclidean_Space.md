@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["理论基础", "理论基础/数学与几何", "理论基础/数学与几何/坐标变换"]
 tags = []
 +++
 

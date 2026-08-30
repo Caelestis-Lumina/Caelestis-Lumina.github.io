@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["控制", "控制/最优控制", "控制/最优控制/MPC"]
 tags = ["控制", "机器人"]
 +++
 

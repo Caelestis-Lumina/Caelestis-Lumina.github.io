@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["系统集成", "系统集成/Linux与容器"]
 tags = ["容器", "Docker", "Linux"]
 +++
 

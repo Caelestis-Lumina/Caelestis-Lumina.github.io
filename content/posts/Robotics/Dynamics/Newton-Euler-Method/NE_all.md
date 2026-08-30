@@ -5,12 +5,11 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["机器人学", "机器人学/动力学", "机器人学/动力学/牛顿-欧拉法"]
 tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 +++
 
 ## 写在前面
-我的其他两篇博客，分别介绍了[外推法]({{< relref "posts/NE_out.md" >}})和[内推法]({{< relref "posts/NE_in.md" >}})，本文将二者汇总起来，形成可复用的算法
+我的其他两篇博客，分别介绍了[外推法](/posts/ne_out/)和[内推法](/posts/ne_in/)，本文将二者汇总起来，形成可复用的算法
 
 参考自craig的《机器人学导论》
 

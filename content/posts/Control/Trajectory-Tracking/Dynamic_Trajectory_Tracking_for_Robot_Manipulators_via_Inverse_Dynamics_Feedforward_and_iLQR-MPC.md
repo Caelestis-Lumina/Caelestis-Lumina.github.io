@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["控制", "控制/轨迹跟踪"]
 tags = []
 +++
 

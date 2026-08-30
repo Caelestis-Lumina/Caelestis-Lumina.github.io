@@ -5,7 +5,6 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["感知", "感知/计算机视觉", "感知/计算机视觉/成像与标定"]
 tags = ["感知", "视觉"]
 +++
 

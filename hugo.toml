@@ -13,6 +13,10 @@ home = ["HTML", "RSS", "JSON"]
 tag = "tags"
 column = "columns"
 
+[permalinks]
+  [permalinks.page]
+  posts = "/posts/:contentbasename/"
+
 [params]
 author = "Caelestis-Lumina"
 description = "Notes on programming, artificial intelligence, robotics, and engineering practice."
