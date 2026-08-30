@@ -128,7 +128,7 @@ $$\mathbf{a}_i = \mathbf{a}_r + \mathbf{\dot{\omega}} \times \mathbf{r} + \bolds
 ---
 
 ## 惯性张量
-由于内容比较多，我[单开了一篇博客](https://blog.csdn.net/m0_59475014/article/details/157974505?spm=1001.2014.3001.5501)讲解惯性张量
+由于内容比较多，我[单开了一篇博客](/posts/inertia_tensor/)讲解惯性张量
 
 ---
 ## 传输定理（Transport Theorem）

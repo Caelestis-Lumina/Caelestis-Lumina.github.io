@@ -26,7 +26,8 @@
         {{- $termPage = . -}}
       {{- end -}}
       {{- with $termPage.LinkTitle -}}
-        {{- $label = . -}}
+        {{- $titleParts := split . "/" -}}
+        {{- $label = index $titleParts (sub (len $titleParts) 1) -}}
       {{- end -}}
       {{- $postCount := 0 -}}
       {{- $normalizedName := lower $name -}}
