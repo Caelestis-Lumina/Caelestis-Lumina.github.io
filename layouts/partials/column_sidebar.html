@@ -18,7 +18,19 @@
     <ul class="column-flat-data" hidden>
       {{- range site.Taxonomies.columns.Alphabetical }}
       {{- $name := .Name -}}
-      {{- $count := .Count -}}
+      {{- $count := 0 -}}
+      {{- $normalizedName := lower $name -}}
+      {{- $prefix := printf "%s/" $normalizedName -}}
+      {{- range site.RegularPages -}}
+        {{- $hit := false -}}
+        {{- range (.Params.columns | default slice) -}}
+          {{- $column := lower . -}}
+          {{- if or (eq $column $normalizedName) (hasPrefix $column $prefix) -}}
+            {{- $hit = true -}}
+          {{- end -}}
+        {{- end -}}
+        {{- if $hit -}}{{- $count = add $count 1 -}}{{- end -}}
+      {{- end -}}
       {{- with site.GetPage (printf "/columns/%s" $name) }}
       <li data-path="{{ $name }}" data-url="{{ .RelPermalink }}" data-count="{{ $count }}"></li>
       {{- end }}

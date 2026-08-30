@@ -5,7 +5,7 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["控制", "控制/系统架构", "控制/系统架构/ROS2"]
+columns = ["系统集成", "系统集成/ROS2", "系统集成/ROS2/通信与中间件"]
 tags = ["ROS2", "机器人", "DDS"]
 +++
 

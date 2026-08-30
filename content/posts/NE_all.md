@@ -5,7 +5,7 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["控制", "控制/机器人学", "控制/机器人学/动力学"]
+columns = ["机器人学", "机器人学/动力学", "机器人学/动力学/牛顿-欧拉法"]
 tags = ["控制", "动力学", "机械臂", "理论力学", "机器人"]
 +++
 

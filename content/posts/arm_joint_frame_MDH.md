@@ -6,7 +6,7 @@ article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
 description = "基于改进 DH（MDH）梳理关节坐标系建立、参数定义、旋转矩阵与齐次变换矩阵的获取方法。"
-columns = ["控制", "控制/机器人学", "控制/机器人学/运动学"]
+columns = ["机器人学", "机器人学/运动学"]
 tags = ["运动学", "线性代数"]
 +++
 

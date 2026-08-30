@@ -21,23 +21,45 @@
         {{- end -}}
       {{- end -}}
       {{- $childCount := $childScratch.Get "count" -}}
+      {{- $termPage := $term.Page -}}
+      {{- with site.GetPage (printf "/columns/%s" $name) -}}
+        {{- $termPage = . -}}
+      {{- end -}}
+      {{- with $termPage.LinkTitle -}}
+        {{- $label = . -}}
+      {{- end -}}
+      {{- $postCount := 0 -}}
+      {{- $normalizedName := lower $name -}}
+      {{- $prefix := printf "%s/" $normalizedName -}}
+      {{- range site.RegularPages -}}
+        {{- $hit := false -}}
+        {{- range (.Params.columns | default slice) -}}
+          {{- $column := lower . -}}
+          {{- if or (eq $column $normalizedName) (hasPrefix $column $prefix) -}}
+            {{- $hit = true -}}
+          {{- end -}}
+        {{- end -}}
+        {{- if $hit -}}
+          {{- $postCount = add $postCount 1 -}}
+        {{- end -}}
+      {{- end -}}
       <li class="column-index-item{{ if gt $childCount 0 }} has-children{{ end }}">
         {{- if gt $childCount 0 }}
         <details class="column-index-branch" open>
           <summary class="column-index-row" title="Expand or collapse child columns under {{ $label }}">
             <span class="column-index-chevron" aria-hidden="true"></span>
             <span class="column-index-label">{{ $label }}</span>
-            <span class="column-index-count">{{ $term.Count }} posts</span>
-            <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
+            <span class="column-index-count">{{ $postCount }} {{ cond (eq $postCount 1) "post" "posts" }}</span>
+            <a class="column-index-enter" href="{{ $termPage.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
           </summary>
           {{- partial "column_tree.html" (dict "Terms" $terms "Parent" $name "Depth" (len $parts)) -}}
         </details>
         {{- else }}
         <div class="column-index-row is-leaf">
           <span class="column-index-leaf-mark" aria-hidden="true"></span>
-          <a class="column-index-link" href="{{ $term.Page.RelPermalink }}">{{ $label }}</a>
-          <span class="column-index-count">{{ $term.Count }} posts</span>
-          <a class="column-index-enter" href="{{ $term.Page.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
+          <a class="column-index-link" href="{{ $termPage.RelPermalink }}">{{ $label }}</a>
+          <span class="column-index-count">{{ $postCount }} {{ cond (eq $postCount 1) "post" "posts" }}</span>
+          <a class="column-index-enter" href="{{ $termPage.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
         </div>
         {{- end }}
       </li>

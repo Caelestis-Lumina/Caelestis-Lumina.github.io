@@ -30,7 +30,8 @@
   {{- $hit := false }}
   {{- with .Params.columns }}
     {{- range . }}
-      {{- if or (eq . $current) (hasPrefix . $prefix) }}
+      {{- $column := lower . }}
+      {{- if or (eq $column (lower $current)) (hasPrefix $column (lower $prefix)) }}
         {{- $hit = true }}
       {{- end }}
     {{- end }}

@@ -6,7 +6,7 @@ article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
 description = "这部分和实例的申请/存储/释放有关，学明白了内存机制，可以更好地控制实例的生命周期，这部分也是智能指针的前置知识"
-columns = ["计科", "计科/编程语言", "计科/编程语言/C++"]
+columns = ["软件工程", "软件工程/C++", "软件工程/C++/内存管理"]
 tags = ["C++", "内存机制"]
 +++
 

@@ -5,7 +5,7 @@ draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-columns = ["物理", "物理/理论力学"]
+columns = ["理论基础", "理论基础/理论力学"]
 tags = ["动力学", "理论力学"]
 +++
 
