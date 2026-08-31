@@ -144,7 +144,7 @@
 
     const setupColumnTree = () => {
       document.querySelectorAll('.column-index').forEach((tree) => {
-        tree.querySelectorAll('.column-index-enter').forEach((link) => {
+        tree.querySelectorAll('.column-index-branch > summary .column-index-link').forEach((link) => {
           link.addEventListener('click', (event) => event.stopPropagation());
         });
 

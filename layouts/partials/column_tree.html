@@ -49,9 +49,8 @@
         <details class="column-index-branch" open>
           <summary class="column-index-row" title="Expand or collapse child columns under {{ $label }}">
             <span class="column-index-chevron" aria-hidden="true"></span>
-            <span class="column-index-label">{{ $label }}</span>
+            <a class="column-index-link" href="{{ $termPage.RelPermalink }}">{{ $label }}</a>
             <span class="column-index-count">{{ $postCount }} {{ cond (eq $postCount 1) "post" "posts" }}</span>
-            <a class="column-index-enter" href="{{ $termPage.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
           </summary>
           {{- partial "column_tree.html" (dict "Terms" $terms "Parent" $name "Depth" (len $parts)) -}}
         </details>
@@ -60,7 +59,6 @@
           <span class="column-index-leaf-mark" aria-hidden="true"></span>
           <a class="column-index-link" href="{{ $termPage.RelPermalink }}">{{ $label }}</a>
           <span class="column-index-count">{{ $postCount }} {{ cond (eq $postCount 1) "post" "posts" }}</span>
-          <a class="column-index-enter" href="{{ $termPage.RelPermalink }}" aria-label="Open the {{ $label }} column">Open</a>
         </div>
         {{- end }}
       </li>
