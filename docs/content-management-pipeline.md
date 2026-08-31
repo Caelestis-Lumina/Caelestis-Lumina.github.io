@@ -9,6 +9,7 @@
 - Tags 仍由每篇文章 front matter 中的 `tags` 字段维护。
 - `hugo.toml` 固定使用 `/posts/:contentbasename/` 作为文章永久链接，因此在 Columns 目录间移动文章不会改变已发布 URL。
 - 标签使用 `tags` 字段，不区分层级。
+- 文章标题、章节层级、公式说明和术语排版遵循 [文章写作与排版规范](article-style-guide.md)。
 - 修改内容后，本地 Hugo 会自动刷新；推送到 `main` 后由 GitHub Actions 构建并部署。
 
 一篇文章的基本结构如下：

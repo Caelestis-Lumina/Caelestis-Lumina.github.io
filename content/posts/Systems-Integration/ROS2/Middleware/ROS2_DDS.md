@@ -1,5 +1,5 @@
 +++
-title = "【ROS2】Cyclone DDS C语言 API详解"
+title = "[ROS2] Cyclone DDS C 语言 API 详解"
 date = 2026-02-18T00:00:00+08:00
 draft = false
 article_status = "permanent"
@@ -8,18 +8,20 @@ comments = true
 tags = ["ROS2", "机器人", "DDS"]
 +++
 
-## 概述
-本文主要说明Cyclone DDS关键 API 的功能，并解释如何**组合这些 API 来创建不同类型的节点**
-当然了，一个“完整”的 API 参考（包含所有函数、参数和返回值的详细信息）最好是查看 [CycloneDDS 的官方文档](https://cyclonedds.io/docs/cyclonedds/latest/index.html)或直接阅读它安装的头文件（如 `ddsc.h`），本文的目的只是为了快速入门
+## 写在前面
 
-本文讨论的是 CycloneDDS 的 **C API**（`ddsc`），这也是我在其他相关博客中使用的 API
+本文说明 Cyclone DDS 关键 C API 的功能，并解释如何组合这些 API 来创建不同角色的通信节点。
 
-### 一、 CycloneDDS 关键 C API (ddsc) 说明
+完整的函数、参数和返回值说明应以 [Cyclone DDS 官方文档](https://cyclonedds.io/docs/cyclonedds/latest/index.html)和本机安装的 `ddsc.h` 为准。本文聚焦快速建立 API 与通信角色之间的对应关系。
+
+本文讨论 Cyclone DDS 的 **C API**（`ddsc`），这也是其他相关文章使用的接口。
+
+## Cyclone DDS 关键 C API
 
 在 DDS 中，所有东西（Participant, Topic, Writer, Reader）都被视为一个**实体 (Entity)**，由一个 `dds_entity_t` (它在内部是一个 `int32_t` 句柄) 来表示
 > 换句话说，DDS不知道什么Node的概念，所有通过DDS通信的对象都是Entity，Node是属于ROS的概念，我在博客中沿用了这一习惯
 
-#### 1. 核心实体：域参与者 (Domain Participant)
+### 域参与者（Domain Participant）
 
 这是应用程序在 DDS 网络中的入口点，Participant相当于“节点”在DDS中的实例
 * `dds_create_participant(domain_id, qos, listener)`: 创建并加入一个 DDS 域（网络）
@@ -27,14 +29,14 @@ tags = ["ROS2", "机器人", "DDS"]
     * `qos`: `NULL` 表示使用默认 QoS
 * `dds_delete(participant)`: 关闭并清理参与者及其拥有的所有实体
 
-#### 2. 数据定义：主题 (Topic)
+### 主题（Topic）
 
 主题将一个唯一的名称（如 `"sensor/imu_raw"`）与一个数据类型（如 `&robot_ImuRaw_desc`）绑定
 * `dds_create_topic(participant, descriptor, name, qos, listener)`: 在域中声明一个主题
     * `descriptor`: 由 `idlc` 生成的数据类型描述符（例如 `&robot_ImuRaw_desc`）
     * `name`: 主题的字符串名称
 
-#### 3. 配置行为：服务质量 (QoS)
+### 服务质量（QoS）
 
 QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非功能性”属性。
 * `dds_create_qos()`: 创建一个新的、空的 QoS 策略集
@@ -49,16 +51,16 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
     * `DDS_DURABILITY_VOLATILE`: 易失性，订阅者只能接收到在它加入网络 *之后* 发布的消息。
     * `DDS_DURABILITY_TRANSIENT_LOCAL`: （发布者）会保留最新的数据，当有新的订阅者加入时，会立刻把这些“旧”数据发送给它。这对于获取“最新状态”非常有用
 
-#### 4. 通信端点：写入器和读取器 (Writer & Reader)
+### 写入器与读取器（Writer and Reader）
 
 * `dds_create_writer(participant, topic, qos, listener)`: 为某个主题创建一个写入器（发布者）
 * `dds_create_reader(participant, topic, qos, listener)`: 为某个主题创建一个读取器（订阅者）
 
-#### 5. 发送数据 (Writing)
+### 发送数据（Writing）
 
 * `dds_write(writer, data_ptr)`: 发布一个数据样本。`data_ptr` 必须指向一个 `idlc` 生成的与主题匹配的结构体实例。
 
-#### 6. 接收数据 (Reading / Taking)
+### 接收数据（Reading and Taking）
 
 这是最灵活的部分，主要有两种使用方式：
 
@@ -76,7 +78,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
 
 ---
 
-### 二、 如何创建“各种类型”的节点
+## 节点角色与创建方式
 
 在 DDS 中，没有严格的“节点类型”之分。一个“节点”就是一个**域参与者 (Domain Participant)**。
 
@@ -84,7 +86,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
 
 下面是几种常见的节点（参与者）模式：
 
-#### 1. 类型一：纯发布者 (Publisher Node)
+### 纯发布者（Publisher）
 
 **职责**：只发送数据，不接收
 **示例**：一个只发布传感器读数的 `sensor` 进程
@@ -94,7 +96,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
 2.  调用 `dds_create_topic()` 定义数据主题（例如 `"sensor/imu_raw"`）
 3.  调用 `dds_create_writer()` 创建一个或多个写入器
 4.  在主循环中，准备数据并调用 `dds_write()` 发送
-#### 2. 类型二：纯订阅者 (Subscriber Node)
+### 纯订阅者（Subscriber）
 
 **职责**：只接收数据，不发送
 **示例**：一个只接收日志消息并将其写入文件的 `logger` 进程
@@ -116,7 +118,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
 
 这种方式更高效，因为它用“事件驱动”取代了“忙等待”循环
 
-#### 3. 类型三：收发节点 (Pub/Sub Node)
+### 收发节点（Publisher and Subscriber）
 
 **职责**：同时发送和接收数据。
 比如controller节点可以配置成这个类型(订阅 IMU, 发布 PWM) 
@@ -125,7 +127,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
 这仅仅是**类型一和类型二的组合**。我们只需在同一个 `dds_participant` 上同时创建需要的 `dds_reader` 和 `dds_writer` 即可
 
 
-#### 4. 类型四：请求/应答 (Request/Reply) 模式
+### 请求与应答（Request and Reply）
 
 这是一种更高级的模式，没有单一的 API 函数，而是通过组合实现的。
 
@@ -145,3 +147,7 @@ QoS 是 DDS 中最强大也是最复杂的部分。它定义了通信的“非�
     5.  通过 `dds_write` 发送 "Request"
     6.  等待 (通过 `dds_take` 或 `dds_wait`) "Reply" 到达
     7.  检查收到的应答中的请求 ID 是否与我发送的相匹配，以确认这是给我的应答
+
+## 总结
+
+DDS 本身不定义 ROS 意义上的节点类型。应用程序通过 `dds_create_participant()` 加入通信域，再按需组合 Topic、Writer、Reader、QoS 和 WaitSet，形成发布、订阅、收发或请求应答等不同角色。

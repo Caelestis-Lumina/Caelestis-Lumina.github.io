@@ -9,19 +9,26 @@ tags = ["容器", "Docker", "Linux"]
 +++
 
 ## 写在前面
-幽灵容器现象本质上是 **Docker 内存状态、磁盘元数据目录与内核挂载点** 三者之间失去同步导致的“逻辑死锁”。
-如果容器频繁进行大量的 IO 操作（比如写日志、写传感器数据），而刚好遇到一次意外断电或系统 OOM（内存溢出），文件系统的 Journal（日志） 可能会损坏
 
-解决方案总结如下：
-## 0. 先查看幽灵容器的完整id
-守护进程关了就看不了了，需要先看一眼
+幽灵容器现象本质上是 **Docker 内存状态、磁盘元数据目录与内核挂载点** 三者之间失去同步导致的“逻辑死锁”。
+如果容器频繁执行大量 I/O 操作，例如写入日志或传感器数据，又恰好遇到异常断电或系统 OOM，文件系统日志和 Docker 元数据就可能损坏。
+
+> 以下操作会直接修改 Docker 的本地元数据。执行前应确认目标容器 ID，并备份仍需保留的数据。
+
+## 处理流程
+
+### 1. 获取幽灵容器的完整 ID
+
+停止守护进程后将无法继续查询容器，因此需要先记录目标容器的完整 ID。
+
 ```shell
 # 查看目标幽灵容器的简写id
 docker ps -a
 # 查看完整id
 docker ps -a --no-trunc | grep <填写简写id>
 ```
-## 1. 彻底切断守护进程
+
+### 2. 停止 Docker 守护进程
 
 只停止 `docker.service` 是不够的，必须同时停掉 `socket` 激活器，防止手动删除时文件被占用。
 
@@ -30,7 +37,7 @@ systemctl stop docker.socket
 systemctl stop docker
 ```
 
-## 2. 定位并物理删除元数据
+### 3. 删除损坏的容器元数据
 
 Docker 所有的容器定义都存储在 `/var/lib/docker/containers/`。直接删除对应 ID 的文件夹即可强行抹除它的存在证据。
 
@@ -39,7 +46,7 @@ Docker 所有的容器定义都存储在 `/var/lib/docker/containers/`。直接�
 rm -rf /var/lib/docker/containers/<CONTAINER_ID>
 ```
 
-## 3. 清理残留挂载点（可选但重要）
+### 4. 清理残留挂载点
 
 有时容器退出了，但 OverlayFS 挂载点还在内核里。如果重启 Docker 后依然报错，需检查：
 
@@ -49,7 +56,7 @@ mount | grep <CONTAINER_ID>
 umount /var/lib/docker/overlay2/<ID>/merged
 ```
 
-## 4. 重启并同步状态
+### 5. 重启并同步状态
 
 重新启动 Docker，它会扫描本地目录并重建内部索引。
 
@@ -60,7 +67,7 @@ systemctl start docker
 
 ---
 
-## 番外 (针对嵌入式linux)
+## 嵌入式 Linux 补充
 
 由于嵌入式linux开发板经常使用 SD 卡或 eMMC 存储，这种“幽灵容器”的频繁出现往往是底层预警：
 

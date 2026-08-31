@@ -1,15 +1,17 @@
 +++
-title = "[c++] 智能指针"
+title = "[C++] 智能指针：所有权与生命周期"
 date = 2026-08-30T00:00:00+08:00
 draft = false
 article_status = "permanent"
 applicable_versions = ["all"]
 comments = true
-description = "考虑到cpp较为复杂的内存管理机制，为了方便管理实例的生命周期，cpp引入了智能指针的机制"
+description = "从普通指针出发，理解 unique_ptr、shared_ptr 的所有权语义与对象生命周期管理。"
 tags = ["C++", "内存机制"]
 +++
 
-# C++ 智能指针：从普通指针到所有权与生命周期
+## 写在前面
+
+智能指针解决的核心问题不是语法便利，而是明确对象的所有权和生命周期。本文从普通指针的局限出发，依次说明 `std::unique_ptr`、`std::shared_ptr` 以及非拥有型访问之间的差异。
 
 ## 1. 为什么我们需要智能指针
 

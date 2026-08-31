@@ -678,10 +678,10 @@ $$
 然后舍弃原计划中的剩余部分，重新求解：
 
 $$
+\begin{aligned}
 U_{k+1}^*
-=
-\arg\min_{U_{k+1}}
-J(\hat x_{k+1},U_{k+1}) \tag{16}
+&= \arg\min_{U_{k+1}} J(\hat x_{k+1},U_{k+1})
+\end{aligned} \tag{16}
 $$
 
 再执行新序列中的第一项：
@@ -830,15 +830,19 @@ $$
 也可以通过增广矩阵指数一次求得 $A$ 和 $B$：
 
 $$
+\begin{aligned}
 \exp\left(
 \begin{bmatrix}
-A_c&B_c\\0&0
+A_c & B_c \\
+0 & 0
 \end{bmatrix}T_s
 \right)
-=
+&=
 \begin{bmatrix}
-A&B\\0&I
+A & B \\
+0 & I
 \end{bmatrix}
+\end{aligned}
 $$
 
 模型建立后，需要检查它在工作区间内是否足够准确，并检查可控性和可观性。
@@ -994,7 +998,7 @@ $$
 控制周期为 $T_s$ 时，需要满足：
 
 $$
-T_{\mathrm{estimate}}+T_{\mathrm{build}}+T_{\mathrm{solve}}+T_{\mathrm{check}}<T_s
+T_{\mathrm{estimate}}+T_{\mathrm{build}}+T_{\mathrm{solve}}+T_{\mathrm{check}} \lt T_s
 $$
 
 不能只关注平均求解时间，还应检查最坏情况下的求解时间。
