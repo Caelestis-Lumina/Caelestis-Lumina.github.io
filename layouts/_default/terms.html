@@ -19,6 +19,41 @@
   </div>
   {{- partial "column_tree.html" (dict "Terms" .Data.Terms.Alphabetical "Parent" "" "Depth" 0) -}}
 </section>
+{{- else if eq .Type "tags" }}
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+  {{- if .Description }}<div class="post-description">{{ .Description }}</div>{{ end }}
+</header>
+
+{{- $terms := .Data.Terms.Alphabetical }}
+{{- $minCount := 0 }}
+{{- $maxCount := 0 }}
+{{- range $index, $term := $terms }}
+  {{- if eq $index 0 }}{{ $minCount = .Count }}{{ end }}
+  {{- $minCount = math.Min $minCount .Count }}
+  {{- $maxCount = math.Max $maxCount .Count }}
+{{- end }}
+<ul class="tag-bubbles" aria-label="Tags">
+  {{- range $index, $term := $terms }}
+    {{- /* Square-root scaling keeps less frequent tags readable; equal counts share a size. */}}
+    {{- $weight := 0.0 }}
+    {{- if gt $maxCount $minCount }}
+      {{- $weight = div (sub (math.Sqrt .Count) (math.Sqrt $minCount)) (sub (math.Sqrt $maxCount) (math.Sqrt $minCount)) }}
+    {{- end }}
+    {{- $size := add 88 (mul 64 $weight) }}
+    {{- $fontSize := add 14 (mul 5 $weight) }}
+    {{- $hue := mod (add 210 (mul $index 137)) 360 }}
+    <li style="{{ printf "--bubble-size: %.2fpx; --bubble-font-size: %.2fpx; --bubble-hue: %d;" $size $fontSize $hue | safeCSS }}">
+      <a class="tag-bubble" href="{{ .Page.Permalink }}" aria-label="{{ .Page.Title }}: {{ .Count }} {{ if eq .Count 1 }}post{{ else }}posts{{ end }}">
+        <span class="tag-bubble-name">{{ .Page.Title }}</span>
+        <span class="tag-bubble-count" aria-hidden="true">{{ .Count }} <span>{{ if eq .Count 1 }}post{{ else }}posts{{ end }}</span></span>
+      </a>
+    </li>
+  {{- end }}
+</ul>
+{{- with resources.Get "js/tag-bubbles.js" | minify | fingerprint }}
+<script defer src="{{ .RelPermalink }}" integrity="{{ .Data.Integrity }}"></script>
+{{- end }}
 {{- else }}
 {{- if .Title }}
 <header class="page-header">

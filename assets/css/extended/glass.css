@@ -1,0 +1,187 @@
+:root {
+  --glass-surface: rgb(255 255 255 / 0.52);
+  --glass-reading: rgb(255 255 255 / 0.76);
+  --glass-header: rgb(248 250 255 / 0.62);
+  --glass-inset: rgb(255 255 255 / 0.3);
+  --glass-edge: rgb(255 255 255 / 0.78);
+  --glass-highlight: rgb(255 255 255 / 0.85);
+  --glass-shadow: 0 12px 40px rgb(49 61 101 / 0.06);
+  --glass-shadow-hover: 0 18px 46px rgb(49 61 101 / 0.11);
+  --glass-blur: 20px;
+  --ambient-violet: rgb(162 158 244 / 0.3);
+  --ambient-cyan: rgb(112 211 222 / 0.25);
+  --ambient-peach: rgb(246 190 171 / 0.22);
+}
+
+body.dark,
+:root[data-theme="dark"] {
+  --glass-surface: rgb(26 31 44 / 0.5);
+  --glass-reading: rgb(22 27 38 / 0.8);
+  --glass-header: rgb(18 23 34 / 0.66);
+  --glass-inset: rgb(183 200 244 / 0.04);
+  --glass-edge: rgb(181 202 247 / 0.14);
+  --glass-highlight: rgb(215 228 255 / 0.1);
+  --glass-shadow: 0 14px 44px rgb(0 0 0 / 0.18);
+  --glass-shadow-hover: 0 20px 48px rgb(0 0 0 / 0.26);
+  --ambient-violet: rgb(100 85 198 / 0.21);
+  --ambient-cyan: rgb(42 133 160 / 0.17);
+  --ambient-peach: rgb(164 95 139 / 0.13);
+}
+
+/* A fixed, quiet backdrop keeps the glass visible on both short and long pages. */
+body,
+body.list,
+html[data-theme="dark"] body.list {
+  isolation: isolate;
+  background: var(--theme);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 9% 12%, var(--ambient-violet), transparent 52%),
+    radial-gradient(ellipse at 92% 42%, var(--ambient-cyan), transparent 52%),
+    radial-gradient(ellipse at 44% 100%, var(--ambient-peach), transparent 54%);
+}
+
+.header {
+  border-bottom-color: var(--glass-edge);
+  background: var(--glass-header);
+  box-shadow: inset 0 -1px var(--glass-highlight), 0 4px 24px rgb(20 30 60 / 0.025);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+  backdrop-filter: blur(24px) saturate(145%);
+}
+
+.home-hero,
+.home-principles,
+.home-recent-item,
+.post-entry,
+.post-single,
+.page-header + .post-content,
+.column-index,
+.column-sidebar,
+.post-toc-sidebar,
+.term-child-list a,
+#searchInput {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-surface);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(135%);
+}
+
+.home-hero {
+  border-radius: 24px;
+  background:
+    linear-gradient(125deg, var(--glass-inset), transparent 65%),
+    var(--glass-surface);
+}
+
+.home-principles {
+  border-radius: 22px;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.post-single,
+.page-header + .post-content {
+  background: var(--glass-reading);
+}
+
+.post-entry {
+  border-inline-start: 3px solid color-mix(in srgb, var(--entry-accent) 48%, transparent);
+}
+
+.post-entry:hover,
+.home-recent-item:hover,
+.term-child-list a:hover {
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--glass-shadow-hover);
+}
+
+.reading-rail-header {
+  border-bottom-color: var(--glass-edge);
+  border-radius: 9px 9px 0 0;
+  background: var(--glass-header);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.home-signal-strip {
+  border: 1px solid var(--glass-edge);
+  border-radius: 14px;
+  background: var(--glass-inset);
+  padding-inline: 0.9rem;
+}
+
+.home-topic-chip,
+.home-tag-chip,
+.home-action:not(.home-action-primary),
+.column-index-count,
+.column-index-actions button {
+  border-color: var(--glass-edge);
+  background: var(--glass-inset);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.home-topic-chip,
+.home-tag-chip {
+  color: var(--chip-strong);
+}
+
+body.dark .home-action-primary,
+html[data-theme="dark"] .home-action-primary {
+  color: #111827;
+}
+
+.column-index-toolbar,
+.home-hero-topics {
+  border-color: var(--glass-edge);
+}
+
+.column-index-subtree {
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.post-content blockquote {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--cyan) 9%, transparent), color-mix(in srgb, var(--accent) 5%, transparent));
+}
+
+#searchInput:focus {
+  border-color: color-mix(in srgb, var(--cyan) 55%, var(--glass-edge));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 10%, transparent), var(--glass-shadow);
+}
+
+@media (max-width: 760px) {
+  :root { --glass-blur: 12px; }
+  .home-hero { border-radius: 20px; }
+}
+
+/* Keep opaque, readable surfaces when transparency is unavailable or unwanted. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root,
+  body.dark,
+  :root[data-theme="dark"] {
+    --glass-surface: var(--entry);
+    --glass-reading: var(--entry);
+    --glass-header: var(--theme);
+    --glass-edge: var(--border);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  body.dark,
+  :root[data-theme="dark"] {
+    --glass-surface: var(--entry);
+    --glass-reading: var(--entry);
+    --glass-header: var(--theme);
+    --glass-inset: var(--entry);
+    --glass-edge: var(--border);
+    --ambient-violet: transparent;
+    --ambient-cyan: transparent;
+    --ambient-peach: transparent;
+  }
+}

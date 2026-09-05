@@ -33,7 +33,7 @@
 }
 
 body.dark,
-html[data-theme="dark"] {
+:root[data-theme="dark"] {
   --theme: #111318;
   --entry: #181b22;
   --primary: #f2f4f8;
@@ -460,6 +460,8 @@ body {
 }
 
 .post-content mjx-container[display="true"] {
+  /* MathJax sets an inline minimum width for numbered equations. */
+  min-width: 0 !important;
   max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
