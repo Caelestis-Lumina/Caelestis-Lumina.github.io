@@ -1,0 +1,21 @@
+{
+  "name": "caelestis-lumina-knowledge",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "build": "tsc -p knowledge/tsconfig.json && vite build --config knowledge/vite.config.ts",
+    "watch": "vite build --watch --config knowledge/vite.config.ts",
+    "test": "node --test knowledge/tests/*.test.ts",
+    "check": "tsc -p knowledge/tsconfig.json"
+  },
+  "dependencies": {
+    "@kitlangton/rolling-number": "0.4.1",
+    "three": "0.183.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.183.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.1"
+  }
+}
