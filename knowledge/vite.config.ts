@@ -1,7 +1,17 @@
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 export default defineConfig({
+  publicDir: false,
+  plugins: [{
+    name: "hugo-manifest",
+    closeBundle() {
+      const data = fileURLToPath(new URL("../data", import.meta.url));
+      mkdirSync(data, { recursive: true });
+      writeFileSync(`${data}/knowledge.json`, readFileSync(fileURLToPath(new URL("../static/knowledge/.vite/manifest.json", import.meta.url))));
+    },
+  }],
   base: "./",
   build: {
     outDir: fileURLToPath(new URL("../static/knowledge", import.meta.url)),

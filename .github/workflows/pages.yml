@@ -33,7 +33,24 @@ jobs:
           hugo-version: "0.165.0"
           extended: true
 
-      - name: Build
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Build and test knowledge interface
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm test
+          pnpm build
+
+      - name: Build Hugo
         run: hugo --minify
 
       - name: Upload artifact
