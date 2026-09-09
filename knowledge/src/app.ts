@@ -95,6 +95,11 @@ export class KnowledgeApp {
     this.scene.onSelect = (index, cell) => {
       if (this.mode === "archive" && !this.overlayOpen()) this.select(index, cell ? { cell } : undefined);
     };
+    this.scene.onNavigate = ({axis, direction}) => {
+      if (this.mode !== "archive" || this.overlayOpen()) return;
+      const index = axis === "lane" ? this.catalog.stepLane(direction) : this.catalog.stepRow(direction);
+      this.select(index, {axis, direction});
+    };
     this.scene.onHover = index => {
       const label = element("#hover-label");
       label.hidden = index === null || this.mode !== "archive";

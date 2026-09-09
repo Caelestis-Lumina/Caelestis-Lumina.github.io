@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ArchiveGesture, type ArchiveStep } from "../archive-gesture.ts";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { createArchiveLighting, type LightingLook } from "./archive-lighting";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -90,7 +91,7 @@ export class ArchiveScene {
   private targetReveal = 0;
   private last = 0;
   private pointer = new THREE.Vector2();
-  private dragging = false;
+  private cancelPointer = () => {};
   private rotation = 0;
   private targetRotation = 0;
   private light: THREE.DirectionalLight;
@@ -103,6 +104,7 @@ export class ArchiveScene {
   private highQuality = true;
   onSelect?: (index: number, cell?: ArchiveCell) => void;
   onHover?: (index: number | null) => void;
+  onNavigate?: (step: ArchiveStep) => void;
   constructor(
     private container: HTMLElement,
     private readonly selectionPulse = baselineSelectionWave,
@@ -126,7 +128,7 @@ export class ArchiveScene {
     this.renderer.toneMappingExposure = 1.05;
     this.renderer.domElement.setAttribute(
       "aria-label",
-      "三维研究档案阵列，可点击选择档案",
+      "三维档案阵列：横向拖动切专栏，纵向拖动翻阅，点击选择档案",
     );
     container.appendChild(this.renderer.domElement);
     this.scene.background = new THREE.Color("#eae5e1");
@@ -424,6 +426,7 @@ export class ArchiveScene {
     };
   }
   setMode(mode: "hidden" | "archive" | "detail") {
+    this.cancelPointer();
     if (mode !== "archive") this.pendingPulse = null;
     this.looping = mode !== "hidden";
     if (!this.looping) {
@@ -439,7 +442,6 @@ export class ArchiveScene {
     this.lastInteraction = this.clock;
     this.targetReveal = mode === "hidden" ? 0 : 1;
     this.targetDetail = mode === "detail" ? 1 : 0;
-    this.dragging = false;
     if (mode !== "detail") {
       this.targetRotation = 0;
       if (this.rotation !== 0) this.returnY = this.model.position.y;
@@ -599,87 +601,79 @@ export class ArchiveScene {
   }
   private bindPointer() {
     const canvas = this.renderer.domElement;
-    let startX = 0,
-      startY = 0;
-    canvas.addEventListener("pointerdown", (e) => {
-      startX = e.clientX;
-      startY = e.clientY;
-      if (this.canInspect) {
-        this.dragging = true;
-        canvas.setPointerCapture(e.pointerId);
-      }
-    });
-    canvas.addEventListener("pointermove", (e) => {
+    const gesture = new ArchiveGesture();
+    let pointerId: number | null = null;
+    let inspecting = false;
+    let lastX = 0;
+    const canBrowse = () => this.loaded && this.targetReveal === 1 && this.reveal > 0.8 && this.targetDetail === 0 && this.detail < 0.2;
+    const pick = (e: PointerEvent) => {
       const r = canvas.getBoundingClientRect();
-      this.pointer.set(
-        (e.clientX - r.left) / r.width - 0.5,
-        (e.clientY - r.top) / r.height - 0.5,
-      );
-      if (this.dragging) {
-        if (!this.canInspect) {
-          this.dragging = false;
-          return;
-        }
-        this.targetRotation = THREE.MathUtils.clamp(
-          this.targetRotation + e.movementX * 0.004,
-          -0.8,
-          0.8,
-        );
+      this.cursor.set(((e.clientX - r.left) / r.width) * 2 - 1, 1 - ((e.clientY - r.top) / r.height) * 2);
+      this.raycaster.setFromCamera(this.cursor, this.camera);
+      return this.raycaster.intersectObjects([this.instances[0], this.model], true)[0];
+    };
+    this.cancelPointer = () => {
+      const captured = pointerId;
+      pointerId = null;
+      inspecting = false;
+      gesture.reset();
+      this.container.dataset.dragging = "false";
+      canvas.style.cursor = "";
+      this.onHover?.(null);
+      if (captured !== null && canvas.hasPointerCapture(captured)) canvas.releasePointerCapture(captured);
+    };
+    const browse = (e: PointerEvent) => {
+      if (!canBrowse()) { this.cancelPointer(); return; }
+      const step = gesture.move(e.clientX, e.clientY);
+      this.container.dataset.dragging = String(gesture.dragging);
+      if (gesture.dragging) this.onHover?.(null);
+      if (step) this.onNavigate?.(step);
+    };
+    canvas.addEventListener("pointerdown", e => {
+      if (!e.isPrimary || e.button !== 0 || pointerId !== null || (!canBrowse() && !this.canInspect)) return;
+      pointerId = e.pointerId;
+      lastX = e.clientX;
+      inspecting = this.canInspect;
+      const r = canvas.getBoundingClientRect();
+      gesture.begin(e.clientX, e.clientY, r.width, r.height);
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove", e => {
+      if (!e.isPrimary || (pointerId !== null && e.pointerId !== pointerId)) return;
+      const r = canvas.getBoundingClientRect();
+      this.pointer.set((e.clientX - r.left) / r.width - 0.5, (e.clientY - r.top) / r.height - 0.5);
+      if (pointerId !== null) {
+        if (inspecting) {
+          if (!this.canInspect) { this.cancelPointer(); return; }
+          this.targetRotation = THREE.MathUtils.clamp(this.targetRotation + (e.clientX - lastX) * 0.004, -0.8, 0.8);
+          lastX = e.clientX;
+        } else browse(e);
         return;
       }
-      if (this.reveal < 0.8 || this.detail > 0.2 || !this.loaded) return;
-      this.cursor.set(
-        ((e.clientX - r.left) / r.width) * 2 - 1,
-        (-(e.clientY - r.top) / r.height) * 2 + 1,
-      );
-      this.raycaster.setFromCamera(this.cursor, this.camera);
-      const hit = this.raycaster.intersectObjects(
-        [this.instances[0], this.model],
-        true,
-      )[0];
-      canvas.style.cursor = hit ? "pointer" : "default";
-      this.onHover?.(
-        hit
-          ? hit.instanceId !== undefined
-            ? fileAtCell(this.cells[hit.instanceId])
-            : this.selectedIndex
-          : null,
+      if (!canBrowse()) return;
+      const hit = pick(e);
+      this.onHover?.(hit ? hit.instanceId !== undefined ? fileAtCell(this.cells[hit.instanceId]) : this.selectedIndex : null);
+    });
+    canvas.addEventListener("pointerup", e => {
+      if (e.pointerId !== pointerId) return;
+      if (!inspecting) browse(e);
+      const click = !inspecting && gesture.end() && canBrowse();
+      this.cancelPointer();
+      if (!click) return;
+      const hit = pick(e);
+      if (hit) this.onSelect?.(
+        hit.instanceId !== undefined ? fileAtCell(this.cells[hit.instanceId]) : this.selectedIndex,
+        {...(hit.instanceId !== undefined ? this.cells[hit.instanceId] : this.selectedCell)},
       );
     });
-    canvas.addEventListener("pointerup", (e) => {
-      this.dragging = false;
-      if (
-        Math.hypot(e.clientX - startX, e.clientY - startY) > 6 ||
-        this.detail > 0.2 ||
-        this.reveal < 0.8 ||
-        !this.loaded
-      )
-        return;
-      const r = canvas.getBoundingClientRect();
-      this.cursor.set(
-        ((e.clientX - r.left) / r.width) * 2 - 1,
-        (-(e.clientY - r.top) / r.height) * 2 + 1,
-      );
-      this.raycaster.setFromCamera(this.cursor, this.camera);
-      const hit = this.raycaster.intersectObjects(
-        [this.instances[0], this.model],
-        true,
-      )[0];
-      if (hit)
-        this.onSelect?.(
-          hit.instanceId !== undefined
-            ? fileAtCell(this.cells[hit.instanceId])
-            : this.selectedIndex,
-          hit.instanceId !== undefined
-            ? { ...this.cells[hit.instanceId] }
-            : { ...this.selectedCell },
-        );
-    });
-    canvas.addEventListener("pointercancel", () => (this.dragging = false));
+    for (const event of ["pointercancel", "lostpointercapture"] as const)
+      canvas.addEventListener(event, e => { if (e.pointerId === pointerId) this.cancelPointer(); });
     canvas.addEventListener("pointerleave", () => {
       this.pointer.set(0, 0);
       this.onHover?.(null);
     });
+    window.addEventListener("blur", () => this.cancelPointer());
+    document.addEventListener("visibilitychange", () => { if (document.hidden) this.cancelPointer(); });
   }
   update(
     time: number,

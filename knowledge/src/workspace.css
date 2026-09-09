@@ -1,4 +1,7 @@
 /* Scene controls occupy three stable zones: header, columns, selected article. */
+.three-scene canvas { touch-action: none; user-select: none; }
+[data-mode="archive"] .three-scene canvas { cursor: grab; }
+[data-mode="archive"] .three-scene[data-dragging="true"] canvas { cursor: grabbing; }
 .brand { top: 52px; left: 60px; }
 .brand h1 { font-size: 28px; }
 .brand > div { font-size: 11px; margin-top: 8px; }
@@ -32,7 +35,7 @@
 .eyebrow span { margin-left: 0; }
 .eyebrow .file-id { color: #94836a; display: flex; }
 .file-title { font-size: 28px; font-weight: 600; gap: 18px; text-align: left; width: 100%; min-height: 94px; align-items: flex-start; }
-#selected-title { max-width: none; line-height: 1.6; flex: 1; }
+#selected-title { min-width: 0; max-width: 100%; white-space: normal; line-height: 1.6; flex: 1; }
 .file-open { margin: 10px 0 0; font-size: 23px; }
 .callout-rule { margin: 22px 0 0; background: #baad9770; }
 .callout-rule i { display: none; }
