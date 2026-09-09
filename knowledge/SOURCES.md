@@ -17,7 +17,7 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 ## Reused assets and modules
 
 - `static/rhine/assets/*.glb`: upstream cassette and assembly models, preserved binary assets.
-- `knowledge/src/rhine/{scene,appearance,archive-lighting,motion,archive-loop,boot,boot-motion,scrub-title,model-viewer}.ts`: upstream rendering, camera, materials, motion and interaction code.
+- `knowledge/src/rhine/{scene,appearance,archive-lighting,motion,archive-loop,boot,boot-motion,scrub-title}.ts`: upstream rendering, camera, materials, motion and interaction code.
 - `knowledge/src/rhine/reference.css`: upstream interface styling, font declarations adapted for the local asset paths.
 - `knowledge/src/shell.html`: adapted upstream static interface markup.
 - MiSans Regular and Bold: upstream official WOFF2 assets; NOTICE and original font license included alongside them. Only the two used weights are distributed.

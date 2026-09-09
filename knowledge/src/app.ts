@@ -28,7 +28,6 @@ export class KnowledgeApp {
   private onAction?: (action: string) => boolean;
   private overlayOpen: () => boolean = () => false;
   onStateChange?: (push: boolean) => void;
-  onFrame?: (time: number) => void;
   suspendScene: () => boolean = () => false;
 
   constructor(data: Catalog) {
@@ -214,7 +213,6 @@ export class KnowledgeApp {
   private frame(ms: number) {
     const cinema = this.mode === "boot" ? this.boot.update(ms / 1000) : undefined;
     if (!this.suspendScene()) this.scene.update(ms / 1000, cinema);
-    this.onFrame?.(ms / 1000);
     if (this.mode === "detail") {
       const content = element("#detail-content");
       content.style.opacity = String(this.scene.detailVisibility);

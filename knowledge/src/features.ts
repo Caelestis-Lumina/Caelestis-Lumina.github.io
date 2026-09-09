@@ -4,7 +4,6 @@ import { ArticleReader } from "./reader.ts";
 import { Settings } from "./settings.ts";
 import { ArchiveRoutes, parseRoute, type ArchiveRoute } from "./routes.ts";
 import type { Article, SitePage } from "./catalog.ts";
-import type { ModelViewer } from "./rhine/model-viewer.ts";
 import { element, siteURL } from "./dom.ts";
 import { resolveDestination } from "./site-navigation.ts";
 import { ReadingFlow } from "./reading-flow.ts";
@@ -15,8 +14,6 @@ export class KnowledgeFeatures {
   private search: ArchiveSearch;
   private reader: ArticleReader;
   private settings: Settings;
-  private viewer?: ModelViewer;
-  private viewerLoading = false;
   private restoring = false;
   private flow: ReadingFlow;
   private navigationId = 0;
@@ -40,8 +37,6 @@ export class KnowledgeFeatures {
     this.settings = new Settings(app.prefs, () => app.applyPreferences(), () => app.replay(), () => this.navigate(new URL(siteURL("about/"))));
     app.registerActions(action => this.action(action), () => this.isOverlayOpen());
     app.suspendScene = () => !this.flow.busy && this.isOverlayOpen();
-    app.onFrame = time => this.viewer?.update(time);
-    window.addEventListener("resize", () => this.viewer?.resize());
     app.onStateChange = push => {
       const classic = element<HTMLAnchorElement>('[data-view-mode="classic"]', app.root);
       classic.href = app.currentMode === "detail" ? app.catalog.articles[app.catalog.selected].url : siteURL("classic/");
@@ -53,7 +48,7 @@ export class KnowledgeFeatures {
     this.restore(parseRoute(location.hash));
   }
 
-  private isOverlayOpen() { return this.flow.busy || this.search.isOpen || this.reader.isOpen || this.settings.isOpen || Boolean(this.viewer?.isOpen); }
+  private isOverlayOpen() { return this.flow.busy || this.search.isOpen || this.reader.isOpen || this.settings.isOpen; }
   private route(view: ArchiveRoute["view"]): ArchiveRoute {
     return {article: this.app.catalog.articles[this.app.catalog.selected].id, view};
   }
@@ -67,7 +62,6 @@ export class KnowledgeFeatures {
     }
     else if (action === "settings") this.settings.open();
     else if (action === "read") this.read(this.app.catalog.articles[this.app.catalog.selected]);
-    else if (action === "model-viewer") void this.openViewer();
     else return false;
     return true;
   }
@@ -90,7 +84,6 @@ export class KnowledgeFeatures {
     this.search.close(false);
     this.settings.close(false);
     this.reader.close(false);
-    this.viewer?.close();
     const index = route ? this.app.catalog.articles.findIndex(a => a.id === route.article) : -1;
     if (index >= 0) {
       if (index !== this.app.catalog.selected) this.app.select(index);
@@ -124,21 +117,5 @@ export class KnowledgeFeatures {
     if (destination.kind === "index") this.search.show(destination);
     else this.reader.show(destination.page, destination.anchor);
     if (push) this.routes.save({...this.route(this.app.currentMode === "detail" ? "detail" : "archive"), page: url.pathname + url.search + url.hash}, true);
-  }
-  private async openViewer() {
-    if (this.viewerLoading) return;
-    this.viewerLoading = true;
-    const selected = this.app.catalog.selected;
-    try {
-      const { ModelViewer } = await import("./rhine/model-viewer.ts");
-      if (this.app.currentMode !== "detail" || this.app.catalog.selected !== selected || this.isOverlayOpen()) return;
-      this.viewer ??= new ModelViewer(this.app.root, () => {});
-      const article = this.app.catalog.articles[this.app.catalog.selected];
-      this.viewer.open(`X-${String(this.app.catalog.selected + 1).padStart(3, "0")}`, article.title,
-        () => this.app.renderingScene.createAssemblyModel(), this.app.prefs.reduced);
-    } catch (error) {
-      console.error("Model viewer could not open", error);
-      element("#toast").textContent = "模型查看器未能载入，请重试。";
-    } finally { this.viewerLoading = false; }
   }
 }
