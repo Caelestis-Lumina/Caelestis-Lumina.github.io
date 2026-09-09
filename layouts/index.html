@@ -6,7 +6,7 @@
   <meta name="description" content="{{ site.Params.description }}">
   {{- if not hugo.IsProduction }}<meta name="robots" content="noindex,nofollow">{{ end }}
   <meta name="theme-color" content="#e8e5e1">
-  <meta name="knowledge-base" content="{{ "" | relURL }}">
+  {{ partial "knowledge-mode.html" "3d" }}
   <meta name="knowledge-index" content="{{ "knowledge-index.json" | relURL }}">
   <title>{{ site.Title }} · Knowledge OS</title>
   <link rel="canonical" href="{{ .Permalink }}">

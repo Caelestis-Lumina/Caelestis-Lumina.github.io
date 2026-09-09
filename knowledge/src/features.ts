@@ -3,9 +3,10 @@ import { ArchiveSearch } from "./search.ts";
 import { ArticleReader } from "./reader.ts";
 import { Settings } from "./settings.ts";
 import { ArchiveRoutes, parseRoute, type ArchiveRoute } from "./routes.ts";
-import type { Article } from "./catalog.ts";
+import type { Article, SitePage } from "./catalog.ts";
 import type { ModelViewer } from "./rhine/model-viewer.ts";
-import { element } from "./dom.ts";
+import { element, siteURL } from "./dom.ts";
+import { resolveDestination } from "./site-navigation.ts";
 
 /** Feature coordination lives here; rendering never needs to know about URL or DOM readers. */
 export class KnowledgeFeatures {
@@ -17,19 +18,25 @@ export class KnowledgeFeatures {
   private viewerLoading = false;
   private restoring = false;
 
-  constructor(private app: KnowledgeApp) {
+  constructor(private app: KnowledgeApp, private pages: SitePage[]) {
     this.search = new ArchiveSearch(app.catalog.articles, article => {
       app.select(app.catalog.articles.indexOf(article));
       element(".file-title").focus();
     });
-    this.reader = new ArticleReader(app.catalog.articles, (article, anchor) => this.read(article, anchor));
-    this.reader.onClose = () => this.routes.closeReader(this.route("detail"));
-    this.settings = new Settings(app.prefs, () => app.applyPreferences(), () => app.replay());
+    this.reader = new ArticleReader(url => this.navigate(url));
+    this.reader.onClose = () => {
+      if (parseRoute(location.hash)?.page) this.routes.save(this.route(app.currentMode === "detail" ? "detail" : "archive"));
+      else this.routes.closeReader(this.route("detail"));
+    };
+    this.search.onClose = () => this.routes.save(this.route(app.currentMode === "detail" ? "detail" : "archive"));
+    this.settings = new Settings(app.prefs, () => app.applyPreferences(), () => app.replay(), () => this.navigate(new URL(siteURL("about/"))));
     app.registerActions(action => this.action(action), () => this.isOverlayOpen());
     app.suspendScene = () => this.isOverlayOpen();
     app.onFrame = time => this.viewer?.update(time);
     window.addEventListener("resize", () => this.viewer?.resize());
     app.onStateChange = push => {
+      const classic = element<HTMLAnchorElement>('[data-view-mode="classic"]', app.root);
+      classic.href = app.currentMode === "detail" ? app.catalog.articles[app.catalog.selected].url : siteURL("classic/");
       if (!this.restoring && app.currentMode !== "boot")
         this.routes.save(this.route(app.currentMode), push);
     };
@@ -43,6 +50,8 @@ export class KnowledgeFeatures {
   }
   private action(action: string): boolean {
     if (action === "search") this.search.open();
+    else if (action === "index" || action === "tags") this.navigate(new URL(siteURL(action === "tags" ? "tags/" : "posts/")));
+    else if (action === "about") this.navigate(new URL(siteURL("about/")));
     else if (action === "settings") this.settings.open();
     else if (action === "read") this.read(this.app.catalog.articles[this.app.catalog.selected]);
     else if (action === "model-viewer") void this.openViewer();
@@ -73,8 +82,27 @@ export class KnowledgeFeatures {
         if (route!.view === "read") this.reader.show(this.app.catalog.articles[index]);
       }
     } else if (this.app.currentMode !== "boot") this.app.returnToArchive();
+    if (route?.page) {
+      this.navigate(new URL(route.page, location.href), false);
+      this.restoring = false;
+      return;
+    }
     this.restoring = false;
     if (index < 0 && this.app.currentMode !== "boot") this.routes.save(this.route("archive"));
+  }
+  private navigate(url: URL, push = true) {
+    const destination = resolveDestination(url, new URL(siteURL("")), this.app.catalog.articles, this.pages);
+    if (!destination) {
+      element("#toast").textContent = "这个链接暂无可用档案，请通过检索查找内容。";
+      return;
+    }
+    this.reader.close(false);
+    this.search.close(false);
+    if (destination.kind === "article") { this.read(destination.article, destination.anchor); return; }
+    if (destination.kind === "home") { this.app.returnToArchive(); return; }
+    if (destination.kind === "index") this.search.show(destination);
+    else this.reader.show(destination.page, destination.anchor);
+    if (push) this.routes.save({...this.route(this.app.currentMode === "detail" ? "detail" : "archive"), page: url.pathname + url.search + url.hash}, true);
   }
   private async openViewer() {
     if (this.viewerLoading) return;

@@ -3,7 +3,7 @@ import { element, siteURL } from "./dom.ts";
 import { Preferences } from "./preferences.ts";
 
 export class Settings extends Dialog {
-  constructor(private prefs: Preferences, apply: () => void, replay: () => void) {
+  constructor(private prefs: Preferences, apply: () => void, replay: () => void, about: () => void) {
     super("knowledge-settings", "显示与动效设置");
     this.root.innerHTML = `<header class="dialog-header"><div><span>DISPLAY & MOTION</span><h2>显示与动效</h2></div><button data-close>关闭 <kbd>ESC</kbd></button></header>
       <label class="setting-row"><span><strong>完整画质</strong><small>环境遮蔽、景深与更高分辨率</small></span><input id="setting-quality" type="checkbox"></label>
@@ -17,6 +17,9 @@ export class Settings extends Dialog {
       prefs.setReduced((event.target as HTMLInputElement).checked); apply();
     });
     element(".settings-replay", this.root).addEventListener("click", () => { this.close(); replay(); });
+    element<HTMLAnchorElement>(`a[href="${siteURL("about/")}"]`, this.root).addEventListener("click", event => {
+      event.preventDefault(); this.close(); about();
+    });
   }
   override open() {
     element<HTMLInputElement>("#setting-quality", this.root).checked = this.prefs.quality;

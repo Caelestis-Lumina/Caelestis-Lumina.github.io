@@ -57,7 +57,7 @@ export class SelectionView {
       <p class="article-abstract">${escapeHTML(article.summary)}</p>
       <div class="article-tags">${article.tags.map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
       <div class="article-actions"><button data-action="read">展开阅读 <span>↗</span></button>
-      <a href="${escapeHTML(article.url)}">独立文章页 ↗</a></div>
+      </div>
       <p class="reading-note">${article.minutes} 分钟阅读 · 公式、代码与完整正文</p>`;
   }
 }

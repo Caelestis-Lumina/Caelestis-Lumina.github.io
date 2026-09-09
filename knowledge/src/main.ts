@@ -10,9 +10,10 @@ async function start() {
   try {
     const response = await fetch(element<HTMLMetaElement>('meta[name="knowledge-index"]').content);
     if (!response.ok) throw new Error(`Catalog request failed: ${response.status}`);
-    const app = new KnowledgeApp(parseCatalog(await response.json()));
+    const catalog = parseCatalog(await response.json());
+    const app = new KnowledgeApp(catalog);
     await app.start();
-    new KnowledgeFeatures(app);
+    new KnowledgeFeatures(app, catalog.pages || []);
   } catch (error) {
     console.error("Knowledge base could not start", error);
     const host = document.querySelector("#loading") || element("#stage");

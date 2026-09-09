@@ -1,12 +1,15 @@
-export type ArchiveRoute = { article: string; view: "archive" | "detail" | "read" };
+export type ArchiveRoute = { article: string; view: "archive" | "detail" | "read"; page?: string };
 export function parseRoute(hash: string): ArchiveRoute | null {
   const params = new URLSearchParams(hash.replace(/^#/, ""));
   const article = params.get("article");
   const view = params.get("view");
+  const page = params.get("page");
+  if (page?.startsWith("/") && !page.startsWith("//") && view === "page")
+    return {article: article || "", view: "archive", page};
   return article && (view === "archive" || view === "detail" || view === "read") ? {article, view} : null;
 }
 export function routeHash(route: ArchiveRoute): string {
-  return "#" + new URLSearchParams(route).toString();
+  return "#" + new URLSearchParams(route.page ? {...route, view: "page"} : route).toString();
 }
 
 export class ArchiveRoutes {

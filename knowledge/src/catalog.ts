@@ -14,7 +14,10 @@ export interface Article {
 export interface Catalog {
   version: 1;
   articles: Article[];
+  pages?: SitePage[];
 }
+
+export interface SitePage { url: string; title: string; kind: string; term: string; }
 
 export function parseCatalog(input: unknown): Catalog {
   if (!input || typeof input !== "object") throw new Error("Invalid catalog");
