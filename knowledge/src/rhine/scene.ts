@@ -583,6 +583,7 @@ export class ArchiveScene {
     c.drawImage(this.labelMark, 790, 242, 210, 98);
     this.labelTexture.needsUpdate = true;
   }
+  refreshLabel() { this.drawLabel(this.selectedIndex); }
   resize() {
     const w = this.container.clientWidth,
       h = this.container.clientHeight;

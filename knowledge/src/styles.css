@@ -34,3 +34,45 @@ a:focus-visible, select:focus-visible { outline: 2px solid #a67d48; outline-offs
 .loading.loaded { visibility: hidden; transition: opacity .5s, visibility .5s; }
 [data-reduced="true"] *, [data-reduced="true"] *::before, [data-reduced="true"] *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; } }
+
+.knowledge-dialog { border: 1px solid #c2b9aa; padding: 0; color: #25271f; background: #f1ede5; box-shadow: 0 32px 110px #24201540; max-width: none; max-height: none; font-family: MiSans, system-ui, sans-serif; }
+.knowledge-dialog[open] { animation: dialog-reveal .28s cubic-bezier(.2,.8,.2,1); }
+.knowledge-dialog::backdrop { background: #342e254d; backdrop-filter: blur(9px); }
+@keyframes dialog-reveal { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+.dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 24px 30px; border-bottom: 1px solid #cfc5b6; }
+.dialog-header span { font-size: 10px; letter-spacing: .2em; color: #8d7556; }
+.dialog-header h2 { margin: 8px 0 0; font-size: 23px; font-weight: 600; }
+.dialog-header button { white-space: nowrap; font-size: 13px; }
+.dialog-header kbd { border: 1px solid #c9bfaf; font: 10px system-ui; margin-left: 10px; padding: 2px 4px; }
+.archive-search { width: min(940px, 90vw); height: min(820px, 88vh); }
+.archive-search[open] { display: flex; flex-direction: column; }
+.search-controls { display: flex; gap: 25px; padding: 25px 30px 0; }
+.search-controls label { display: flex; flex-direction: column; gap: 10px; font-size: 12px; color: #817565; }
+.search-controls label:first-child { flex: 1; }
+.search-controls input, .search-controls select { border: 0; border-bottom: 1px solid #b6a88f; border-radius: 0; background: transparent; color: #25271f; padding: 10px 0; font: 16px MiSans, system-ui; min-width: 0; }
+.search-count { margin: 20px 30px 10px; color: #8d7d66; font-size: 12px; }
+.search-results { overflow: auto; padding: 0 30px 30px; }
+.search-results button { display: grid; text-align: left; width: 100%; border-top: 1px solid #d1c9bc; padding: 18px 12px; gap: 9px; }
+.search-results button:hover, .search-results button:focus-visible { background: #e8dece; }
+.result-meta { font-size: 11px; color: #867255; letter-spacing: .03em; }
+.search-results strong { font-size: 17px; line-height: 1.6; font-weight: 600; }
+.result-summary { color: #777369; font-size: 13px; line-height: 1.75; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.result-open { font-size: 11px; color: #8d673b; justify-self: end; }
+.search-empty { color: #817b6f; margin: 45px 0; font-size: 15px; }
+.article-reader { width: min(1400px, 94vw); height: 93vh; }
+.article-reader[open] { display: flex; flex-direction: column; }
+.article-reader .dialog-header { padding: 18px 26px; }
+.article-reader .dialog-header h2 { font-size: 16px; max-width: 620px; line-height: 1.5; }
+.reader-tools { display: flex; align-items: center; gap: 20px; font-size: 12px; }
+.reader-tools a { white-space: nowrap; }
+.article-reader iframe { border: 0; width: 100%; flex: 1; min-height: 0; background: #f5f2ec; }
+.reader-status { padding: 30px; font-size: 15px; color: #817565; }
+.reader-status[hidden] { display: none; }
+.knowledge-settings { width: min(640px, 90vw); }
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 24px 30px; gap: 25px; border-bottom: 1px solid #d5cbbd; }
+.setting-row strong { font-size: 16px; font-weight: 500; }
+.setting-row small { display: block; margin-top: 8px; font-size: 12px; color: #867d6e; }
+.setting-row input { accent-color: #9c7848; width: 20px; height: 20px; }
+.settings-replay { margin: 24px 30px 0; border-bottom: 1px solid #9c7848; padding: 10px 0; font-size: 14px; }
+.settings-credits { font-size: 12px; color: #817565; padding: 22px 30px 30px; line-height: 1.9; }
+.settings-credits a { text-decoration: underline; text-underline-offset: 3px; }

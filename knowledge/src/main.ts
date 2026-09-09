@@ -4,6 +4,7 @@ import "./styles.css";
 import { parseCatalog } from "./catalog.ts";
 import { KnowledgeApp } from "./app.ts";
 import { element, siteURL } from "./dom.ts";
+import { KnowledgeFeatures } from "./features.ts";
 
 async function start() {
   try {
@@ -11,6 +12,7 @@ async function start() {
     if (!response.ok) throw new Error(`Catalog request failed: ${response.status}`);
     const app = new KnowledgeApp(parseCatalog(await response.json()));
     await app.start();
+    new KnowledgeFeatures(app);
   } catch (error) {
     console.error("Knowledge base could not start", error);
     const host = document.querySelector("#loading") || element("#stage");

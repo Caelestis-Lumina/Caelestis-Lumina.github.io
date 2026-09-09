@@ -27,6 +27,9 @@ export class KnowledgeApp {
   private fpsStart = 0;
   private onAction?: (action: string) => boolean;
   private overlayOpen: () => boolean = () => false;
+  onStateChange?: (push: boolean) => void;
+  onFrame?: (time: number) => void;
+  suspendScene: () => boolean = () => false;
 
   constructor(data: Catalog) {
     this.catalog = new ArchiveCatalog(data.articles);
@@ -73,8 +76,10 @@ export class KnowledgeApp {
       element("#loading").innerHTML = '<div class="error-state"><h2>图形连接已中断</h2><p>请重新载入以恢复三维场景。</p><button onclick="location.reload()">重新载入 ↗</button></div>';
     });
     await this.scene.load();
+    // Font loading must not hold the scene hostage; redraw the label when ready.
+    void document.fonts.load("700 20px MiSans").then(() => this.scene.refreshLabel()).catch(() => {});
     this.scene.onSelect = (index, cell) => {
-      if (this.mode !== "boot" && !this.overlayOpen()) this.select(index, cell ? { cell } : undefined);
+      if (this.mode === "archive" && !this.overlayOpen()) this.select(index, cell ? { cell } : undefined);
     };
     this.scene.onHover = index => {
       const label = element("#hover-label");
@@ -99,6 +104,7 @@ export class KnowledgeApp {
     this.scene?.setReduced(this.prefs.reduced);
     this.scene?.setQuality(this.prefs.quality);
     this.stage.dataset.reduced = String(this.prefs.reduced);
+    document.documentElement.dataset.reduced = String(this.prefs.reduced);
     this.view?.update(false);
     if (this.ready && this.prefs.reduced && this.mode === "boot") this.enterArchive();
   }
@@ -108,6 +114,7 @@ export class KnowledgeApp {
     this.catalog.select(index);
     this.scene.select(index, navigation);
     this.view.update(!this.prefs.reduced && this.mode === "archive", navigation);
+    this.onStateChange?.(false);
   }
   openDetail() {
     this.setMode("detail");
@@ -118,6 +125,12 @@ export class KnowledgeApp {
     this.setMode("archive");
     // Cinematic startup uses five physical lanes; reconnect to the selected content.
     this.scene.select(this.catalog.selected);
+  }
+  returnToArchive() { this.setMode("archive"); element(".file-title").focus(); }
+  replay() {
+    if (this.prefs.reduced) { this.enterArchive(); return; }
+    this.setMode("boot");
+    this.boot.start();
   }
 
   private setMode(mode: Mode) {
@@ -132,15 +145,19 @@ export class KnowledgeApp {
     this.scene.setMode(mode === "boot" ? "hidden" : mode);
     this.view.reset();
     if (mode !== "boot") this.boot.reset();
-    if (mode === "detail") this.view.detail();
+    if (mode === "detail") {
+      this.view.detail();
+      element("#detail-content").inert = true;
+    }
+    this.onStateChange?.(mode === "detail");
   }
 
   private action(action: string) {
     if (this.onAction?.(action)) return;
     if (action === "skip") this.enterArchive();
     if (action === "open") this.openDetail();
-    if (action === "back") { this.setMode("archive"); element(".file-title").focus(); }
-    if (action === "replay") { this.setMode("boot"); this.boot.start(); }
+    if (action === "back") this.returnToArchive();
+    if (action === "replay") this.replay();
     const moves: Record<string, ["row" | "lane", number]> = {
       prev: ["row", -1], next: ["row", 1], "column-prev": ["lane", -1], "column-next": ["lane", 1],
     };
@@ -176,12 +193,15 @@ export class KnowledgeApp {
   }
   private frame(ms: number) {
     const cinema = this.mode === "boot" ? this.boot.update(ms / 1000) : undefined;
-    this.scene.update(ms / 1000, cinema);
+    if (!this.suspendScene()) this.scene.update(ms / 1000, cinema);
+    this.onFrame?.(ms / 1000);
     if (this.mode === "detail") {
       const content = element("#detail-content");
       content.style.opacity = String(this.scene.detailVisibility);
       content.style.transform = `translateY(${(1 - this.scene.detailVisibility) * 18}px)`;
-      content.inert = this.scene.detailVisibility < 0.1;
+      const waiting = content.inert;
+      content.inert = this.scene.detailVisibility < 0.95;
+      if (waiting && !content.inert && !this.overlayOpen()) content.focus({ preventScroll: true });
     }
     if (Math.floor(ms / 1000) !== this.lastFrame) {
       this.lastFrame = Math.floor(ms / 1000);
