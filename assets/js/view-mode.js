@@ -4,6 +4,7 @@
   const base = new URL(document.querySelector('meta[name="knowledge-base"]').content, location.href);
   const classic = new URL('classic/', base);
   const surface = document.querySelector('meta[name="knowledge-surface"]').content;
+  const canonical = new URL(document.querySelector('meta[name="knowledge-canonical-base"]').content);
   const key = 'cl-knowledge:view';
   let preference;
   try { preference = localStorage.getItem(key); } catch {}
@@ -22,6 +23,17 @@
     location.replace(sceneURL(location.pathname + location.search + location.hash));
     return;
   }
+  const normalizeLink = link => {
+    const url = new URL(link.href);
+    if (url.origin === canonical.origin && url.pathname.startsWith(canonical.pathname)) {
+      url.protocol = base.protocol;
+      url.host = base.host;
+      link.href = url.href;
+    }
+    if (surface === 'classic' && url.origin === base.origin && url.pathname === base.pathname && !link.hasAttribute('data-view-mode'))
+      link.href = classic.href;
+  };
+  document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('a[href]').forEach(normalizeLink));
   document.addEventListener('click', event => {
     const target = event.target.closest('[data-view-mode]');
     if (target) {
@@ -35,9 +47,6 @@
     }
     // The classic logo and breadcrumbs keep returning to the classic homepage.
     const link = event.target.closest('a[href]');
-    if (surface === 'classic' && link) {
-      const url = new URL(link.href);
-      if (url.origin === base.origin && url.pathname === base.pathname) link.href = classic.href;
-    }
+    if (link) normalizeLink(link);
   });
 })();

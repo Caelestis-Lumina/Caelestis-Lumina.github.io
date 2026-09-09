@@ -17,8 +17,10 @@
 {{- end -}}
 {{- $pages := slice -}}
 {{- range site.Pages -}}
+  {{- if .RelPermalink -}}
   {{- $kind := "page" -}}
   {{- if eq .Kind "term" -}}{{- $kind = .Data.Plural -}}{{- end -}}
   {{- $pages = $pages | append (dict "url" .RelPermalink "title" .Title "kind" $kind "term" (.Data.Term | default "")) -}}
+  {{- end -}}
 {{- end -}}
 {{- dict "version" 1 "articles" $articles "pages" $pages | jsonify -}}

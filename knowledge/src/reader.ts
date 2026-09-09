@@ -77,6 +77,11 @@ export class ArticleReader extends Dialog {
       const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href]");
       if (!link || event.defaultPrevented || event.button !== 0 || link.hasAttribute("download")) return;
       const url = new URL(link.href);
+      const canonical = document.querySelector<HTMLMetaElement>('meta[name="knowledge-canonical-base"]');
+      if (canonical && url.origin === new URL(canonical.content).origin && url.pathname.startsWith(new URL(canonical.content).pathname)) {
+        url.protocol = location.protocol;
+        url.host = location.host;
+      }
       if (url.origin === location.origin && !/\.[a-z0-9]+$/i.test(url.pathname)) {
         if (url.pathname === new URL(this.article!.url, location.href).pathname && url.hash) return;
         event.preventDefault();

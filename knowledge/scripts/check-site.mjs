@@ -34,7 +34,12 @@ for (const name of ["archive-cassette", "archive-assembly"]) {
   assert.equal(model.subarray(0, 4).toString(), "glTF", "Model is not a binary glTF asset");
   assert.equal(model.readUInt32LE(8), model.length, "Model asset is truncated");
 }
-for (const path of ["posts/", "columns/", "tags/", "search/", "about/", "index.xml", "sitemap.xml"])
+for (const path of ["classic/", "posts/", "columns/", "tags/", "search/", "about/", "index.xml", "sitemap.xml"])
   assert.ok(existsSync(localFile(base + path)), `Existing blog route is missing: ${path}`);
 assert.ok(html.includes("application/ld+json"), "Homepage schema metadata is missing");
+const classic = readFileSync(localFile(base + "classic/"), "utf8");
+assert.ok(classic.includes("home-portal") && classic.includes("home-page"), "Classic homepage layout is missing");
+assert.ok(classic.includes("data-view-mode") && classic.includes("js/view-mode.min."), "Classic mode switch is missing");
+assert.ok(!classic.includes("three-renderer"), "Classic pages must not load the WebGL renderer");
+for (const page of catalog.pages || []) assert.ok(existsSync(localFile(page.url)), `Site navigation target is missing: ${page.url}`);
 console.log(`Verified ${catalog.articles.length} article routes, both GLB models, bundled assets and existing blog routes at ${base}`);
