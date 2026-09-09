@@ -32,6 +32,6 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 - The scene tracks selected article identity separately from render-pool slots; asset paths respect the site's base path, and lane rebasing uses the actual column count. Row rebasing is disabled because unequal lane lengths have no small common period.
 - Boot text and canvas labels identify Caelestis Lumina; calibrated spatial motion and baseline lighting are retained.
 - App orchestration, catalog/navigation, preferences, search and reading are maintained outside the upstream-derived modules.
-- Homepage surfaces use blog-specific feathered backgrounds and transparent column controls. `scrub-title.ts` replaces the demo's flashing black strip with an interruptible, readable title reveal.
+- Homepage selection uses panel-free leader lines and typography, with centered transparent column controls. `scrub-title.ts` replaces the demo's flashing black strip with an interruptible, readable title reveal.
 
 Upstream's MIT grant applies to its own code, not automatically to third-party marks or non-code assets. Model assets are reused under the permission reported by the blog owner, not relabeled as MIT. Original Arknights-related rights remain with their respective owners. No reference video or upstream demo essays are distributed.
