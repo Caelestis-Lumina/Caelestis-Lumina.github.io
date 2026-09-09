@@ -52,20 +52,25 @@ export class KnowledgeFeatures {
     if (action === "search") this.search.open();
     else if (action === "index" || action === "tags") this.navigate(new URL(siteURL(action === "tags" ? "tags/" : "posts/")));
     else if (action === "about") this.navigate(new URL(siteURL("about/")));
+    else if (action.startsWith("tag:")) {
+      const tag = decodeURIComponent(action.slice(4));
+      const page = this.pages.find(p => p.kind === "tags" && p.term === tag);
+      if (page) this.navigate(new URL(page.url, location.href));
+    }
     else if (action === "settings") this.settings.open();
     else if (action === "read") this.read(this.app.catalog.articles[this.app.catalog.selected]);
     else if (action === "model-viewer") void this.openViewer();
     else return false;
     return true;
   }
-  private read(article: Article, anchor = "") {
+  private read(article: Article, anchor = "", push = true) {
     this.restoring = true;
     if (this.app.catalog.articles[this.app.catalog.selected] !== article)
       this.app.select(this.app.catalog.articles.indexOf(article));
     if (this.app.currentMode !== "detail") this.app.openDetail();
     this.restoring = false;
     this.reader.show(article, anchor);
-    this.routes.save(this.route("read"), true);
+    this.routes.save(this.route("read"), push);
   }
   private restore(route: ArchiveRoute | null) {
     this.restoring = true;
@@ -93,12 +98,12 @@ export class KnowledgeFeatures {
   private navigate(url: URL, push = true) {
     const destination = resolveDestination(url, new URL(siteURL("")), this.app.catalog.articles, this.pages);
     if (!destination) {
-      element("#toast").textContent = "这个链接暂无可用档案，请通过检索查找内容。";
+      this.search.show({query: url.pathname.split("/").filter(Boolean).at(-1) || ""});
       return;
     }
     this.reader.close(false);
     this.search.close(false);
-    if (destination.kind === "article") { this.read(destination.article, destination.anchor); return; }
+    if (destination.kind === "article") { this.read(destination.article, destination.anchor, push); return; }
     if (destination.kind === "home") { this.app.returnToArchive(); return; }
     if (destination.kind === "index") this.search.show(destination);
     else this.reader.show(destination.page, destination.anchor);

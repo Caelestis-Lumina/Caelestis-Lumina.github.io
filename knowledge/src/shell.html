@@ -23,12 +23,28 @@
   <svg id="inspection-marks" viewBox="0 0 1920 1080" aria-hidden="true"><path id="inspection-lines"/><g id="inspection-corners"></g></svg>
   <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
   <section id="archive-ui" class="archive-ui" aria-label="档案选择">
-    <div class="archive-callout"><div class="eyebrow">KNOWLEDGE ARCHIVE <span>／</span> <span id="archive-category">机构档案</span></div><button class="file-title" data-action="open">FILE NUMBER: <span id="selected-id">X-<span id="selected-code">001</span></span><span class="file-open">↗</span></button><div class="callout-rule"><i></i></div><div class="file-summary"><span id="selected-title">莱茵生命</span><span id="selected-clearance">BUSINESS AREA</span></div><button class="read-file" data-action="open">ACCESS FILE <span>→</span></button></div>
+    <div class="column-workspace">
+      <div class="column-heading"><span>知识专栏</span><small>选择一个主题，浏览它的档案</small></div>
+      <nav class="column-rail" aria-label="顶级专栏">
+        <button data-action="column-prev" class="column-step" aria-label="上一专栏">←</button>
+        <div id="column-tabs" class="column-tabs"></div>
+        <button data-action="column-next" class="column-step" aria-label="下一专栏">→</button>
+      </nav>
+      <div class="column-context"><span>当前专栏 <strong id="column-name"></strong></span><label class="subcolumn-label">子专栏 <select id="subcolumn" aria-label="筛选子专栏"></select></label></div>
+    </div>
+    <div class="archive-callout">
+      <div class="eyebrow"><span id="archive-category"></span><span class="file-id" id="selected-id">X-<span id="selected-code">001</span></span></div>
+      <button class="file-title" data-action="open"><span id="selected-title">正在载入档案</span><span class="file-open">↗</span></button>
+      <div class="callout-rule"><i></i></div>
+      <div class="file-summary"><span>当前档案</span><span id="selected-clearance"></span></div>
+      <button class="read-file" data-action="open">抽取档案 <span>→</span></button>
+      <div class="file-browser">
+        <div class="archive-counter"><span class="tiny-label">篇目</span><div><span id="selected-number">01</span><i>/</i><span class="count-total"></span></div></div>
+        <div class="archive-navigation"><button data-action="prev" aria-label="上一个档案">↑</button><div id="file-ticks" class="file-ticks"></div><button data-action="next" aria-label="下一个档案">↓</button></div>
+      </div>
+    </div>
     <div id="hover-label" class="hover-label" hidden>X-<span id="hover-code">001</span><span id="hover-title"></span></div>
-    <div class="archive-counter"><span class="tiny-label">ARCHIVE / SELECT</span><div><span id="selected-number">01</span><i>/</i><span class="count-total">12</span></div></div>
-    <div class="archive-navigation"><button data-action="prev" aria-label="上一个档案">↑</button><div id="file-ticks" class="file-ticks"></div><button data-action="next" aria-label="下一个档案">↓</button></div>
-    <div class="column-navigation"><button data-action="column-prev" aria-label="上一列">←</button><div><span id="column-number">COLUMN <span id="column-index">01</span> / <span id="column-total"></span></span><strong id="column-name"></strong><label class="subcolumn-label">FILTER <select id="subcolumn" aria-label="筛选子专栏"></select></label></div><button data-action="column-next" aria-label="下一列">→</button></div>
-    <div class="archive-hint"><kbd>←</kbd> <kbd>→</kbd> 切换列 <span>／</span> <kbd>↑</kbd> <kbd>↓</kbd> 前后档案 <span>／</span> <kbd>ENTER</kbd> 读取</div>
+    <div class="archive-hint"><kbd>←</kbd> <kbd>→</kbd> 切换专栏 <span>／</span> <kbd>↑</kbd> <kbd>↓</kbd> 翻阅档案 <span>／</span> <kbd>ENTER</kbd> 抽取</div>
   </section>
   <section id="detail-ui" class="detail-ui" aria-label="档案内容" hidden>
     <button class="back-button" data-action="back">← <span>ARCHIVE OVERVIEW</span><small>ESC</small></button>

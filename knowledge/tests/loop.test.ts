@@ -18,4 +18,9 @@ test("renderer maps repeated cells to actual variable-length lanes", () => {
   assert.equal(new Set(cells.map(c => `${c.lane}:${c.row}`)).size, 288);
   assert.ok(cells.every(c => catalog.articles[fileAtCell(c)]));
   assert.equal(nearestOccurrence(0, 7, 7), 7);
+  // Direct column buttons can skip several lanes; the visual cell must still map to the selected article.
+  for (const index of [0, 3, 51, 1]) {
+    const cell = selectionCell(index, {lane: 9, row: 100});
+    assert.equal(fileAtCell(cell), index);
+  }
 });

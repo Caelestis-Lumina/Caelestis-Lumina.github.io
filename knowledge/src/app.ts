@@ -54,9 +54,14 @@ export class KnowledgeApp {
     window.addEventListener("pageshow", () => { if (this.ready) this.schedule(); });
     this.prefs.systemMotion.addEventListener("change", () => this.applyPreferences());
     this.stage.addEventListener("click", event => {
-      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action], [data-select]");
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action], [data-select], [data-column]");
       if (!target || !this.ready) return;
-      if (target.dataset.select !== undefined) this.select(Number(target.dataset.select));
+      if (target.dataset.column !== undefined) {
+        const current = this.catalog.location(this.catalog.selected).lane;
+        const offset = Number(target.dataset.column) - current;
+        if (offset) this.select(this.catalog.stepLane(offset));
+      }
+      else if (target.dataset.select !== undefined) this.select(Number(target.dataset.select));
       else this.action(target.dataset.action!);
     });
     element<HTMLSelectElement>("#subcolumn").addEventListener("change", event => {

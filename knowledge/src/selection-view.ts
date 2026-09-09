@@ -3,14 +3,15 @@ import { ScrubTitle } from "./rhine/scrub-title.ts";
 import { element, escapeHTML } from "./dom.ts";
 import { ArchiveCatalog } from "./navigation.ts";
 import type { ArchiveNavigation } from "./rhine/archive-loop.ts";
+import { ColumnNavigation } from "./column-navigation.ts";
 
 export class SelectionView {
   private title = new ScrubTitle(element("#selected-title"));
   private number = createRollingNumber(element("#selected-number"), { value: 1, format: { minimumIntegerDigits: 2 }, duration: 460 });
-  private column = createRollingNumber(element("#column-index"), { value: 1, format: { minimumIntegerDigits: 2 }, duration: 460 });
+  private columns: ColumnNavigation;
   private code = createRollingNumber(element("#selected-code"), { value: 1, format: { minimumIntegerDigits: 3 }, duration: 460 });
   private lastLane = -1;
-  constructor(private catalog: ArchiveCatalog) {}
+  constructor(private catalog: ArchiveCatalog) { this.columns = new ColumnNavigation(catalog); }
 
   update(animated: boolean, navigation?: ArchiveNavigation) {
     const { selected, articles, columns } = this.catalog;
@@ -21,11 +22,9 @@ export class SelectionView {
     this.title.update(article.title, animated);
     this.code.update({ value: selected + 1, animated, direction });
     this.number.update({ value: files.indexOf(selected) + 1, animated, direction });
-    this.column.update({ value: lane + 1, animated, direction });
+    this.columns.update();
     element("#selected-clearance").textContent = `${article.minutes} MIN READ`;
     element("#archive-category").textContent = columns[lane];
-    element("#column-name").textContent = columns[lane];
-    element("#column-total").textContent = String(columns.length).padStart(2, "0");
     element(".count-total").textContent = String(files.length).padStart(2, "0");
     element("#object-id").textContent = `NO.${String(selected + 1).padStart(3, "0")}`;
     // Window the tick strip; it must not grow with the entire knowledge base.
@@ -55,7 +54,7 @@ export class SelectionView {
       <p class="detail-path">${escapeHTML(article.columns.at(-1) || "Unfiled")}</p>
       <div class="detail-rule"></div>
       <p class="article-abstract">${escapeHTML(article.summary)}</p>
-      <div class="article-tags">${article.tags.map(t => `<span>${escapeHTML(t)}</span>`).join("")}</div>
+      <div class="article-tags">${article.tags.map(t => `<button data-action="tag:${escapeHTML(encodeURIComponent(t))}">${escapeHTML(t)}</button>`).join("")}</div>
       <div class="article-actions"><button data-action="read">展开阅读 <span>↗</span></button>
       </div>
       <p class="reading-note">${article.minutes} 分钟阅读 · 公式、代码与完整正文</p>`;

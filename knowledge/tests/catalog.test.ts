@@ -19,6 +19,13 @@ test("uneven columns loop in both directions and remember selection", () => {
   catalog.stepLane(-1);
   assert.equal(catalog.stepRow(-1), 47);
   assert.equal(catalog.stepRow(1), 3);
+  catalog.filter(0, "A/two");
+  catalog.stepLane(-2);
+  assert.equal(catalog.selected, 1);
+  catalog.stepLane(2);
+  catalog.stepLane(-2);
+  assert.equal(catalog.filterPath(0), "A/two");
+  assert.equal(catalog.selected, 1);
 });
 test("filtering never leaves an empty lane; search selection clears incompatible filter", () => {
   const catalog = new ArchiveCatalog(articles);
