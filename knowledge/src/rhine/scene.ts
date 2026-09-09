@@ -8,6 +8,8 @@ import { SSAOPass } from "three/addons/postprocessing/SSAOPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
 import { CardAppearance } from "./appearance";
+import { configureInternalOptics } from "./internal-optics.ts";
+import { groupAssembly, spreadAssembly } from "./assembly.ts";
 import { fileLocation, archiveColumns, assetUrl } from "./data";
 import {
   cellKey,
@@ -102,6 +104,10 @@ export class ArchiveScene {
   private labelMark = new Image();
   private reduced = false;
   private highQuality = true;
+  private reading?: {model: THREE.Group; dispose: () => void; groups: Map<string, THREE.Group>};
+  private readingRequest = 0;
+  private readingSpread = 0;
+  private clarity = 0;
   onSelect?: (index: number, cell?: ArchiveCell) => void;
   onHover?: (index: number | null) => void;
   onNavigate?: (step: ArchiveStep) => void;
@@ -267,6 +273,7 @@ export class ArchiveScene {
         mat.polygonOffsetUnits = -2;
       }
       if (name === "Carbon_Ink") continue;
+      configureInternalOptics(name, mat);
       const selectedMesh = new THREE.Mesh(geom, mat);
       selectedMesh.userData.surface = name;
       selectedMesh.castShadow = name === "Optical_Diffuser";
@@ -279,7 +286,7 @@ export class ArchiveScene {
           "Frosted_Polymer",
           "Ivory_Edges",
           "Titanium_Fasteners",
-          "Champagne_Index",
+          "Index_Inlay",
           "Optical_Diffuser",
         ].includes(name)
       ) {
@@ -324,7 +331,7 @@ export class ArchiveScene {
         );
         arrayMat.roughness = 0.38;
       }
-      if (name === "Champagne_Index") {
+      if (name === "Index_Inlay") {
         arrayMat.color.set("#e4d6c5");
         arrayMat.metalness = 0.05;
       }
@@ -394,6 +401,7 @@ export class ArchiveScene {
     });
     this.appearance.prepare(model);
     this.appearance.apply(model, 1);
+    this.appearance.setClarity(model, 1);
     const canvas = document.createElement("canvas");
     canvas.width = this.labelCanvas.width;
     canvas.height = this.labelCanvas.height;
@@ -426,6 +434,7 @@ export class ArchiveScene {
     };
   }
   setMode(mode: "hidden" | "archive" | "detail") {
+    if (mode !== "detail") this.clearReadingAssembly();
     this.cancelPointer();
     if (mode !== "archive") this.pendingPulse = null;
     this.looping = mode !== "hidden";
@@ -497,6 +506,7 @@ export class ArchiveScene {
     }
   }
   select(index: number, navigation?: ArchiveNavigation) {
+    if (index !== this.selectedIndex) { this.clearReadingAssembly(); this.clarity = 0; }
     this.lastInteraction = this.clock;
     const next = fileLocation(index).slot;
     const canonical = fileLocation(index);
@@ -841,6 +851,8 @@ export class ArchiveScene {
       : THREE.MathUtils.lerp(this.detail, cameraTarget, blend);
     const detail = this.detail;
     this.appearance.apply(this.model, ease(this.lift.value / 0.4));
+    this.clarity = THREE.MathUtils.damp(this.clarity, this.targetDetail && this.detail > .85 ? 1 : 0, this.reduced ? 100 : 4.5, dt);
+    this.appearance.setClarity(this.model, this.clarity);
     // Reference 26.92–27.76: the array travels horizontally into a white field.
     const entry = cinematic ? ease((shot - 21.9) / 0.86) : this.reveal;
     const entranceTime = THREE.MathUtils.clamp((shot - 21.92) / 0.75, 0, 1);
@@ -1124,7 +1136,38 @@ export class ArchiveScene {
     bokehUniforms.focus.value = -focalPoint.z;
     bokehUniforms.aperture.value = THREE.MathUtils.lerp(0.0003, 0.0008, detail);
     this.renderer.info.reset();
+    if (this.reading) {
+      this.reading.model.position.copy(this.model.position);
+      this.reading.model.quaternion.copy(this.model.quaternion);
+      spreadAssembly(this.reading.groups, this.readingSpread);
+      this.reading.model.visible = this.readingSpread > 0 && this.targetDetail === 1;
+      this.model.visible = !this.reading.model.visible;
+    }
     this.composer.render();
+  }
+  async prepareReadingAssembly() {
+    if (this.reading) return;
+    const ticket = ++this.readingRequest;
+    const source = await this.createAssemblyModel();
+    if (ticket !== this.readingRequest || this.targetDetail !== 1) { source.dispose(); return; }
+    this.reading = {...source, groups: groupAssembly(source.model)};
+    source.model.visible = false;
+    this.scene.add(source.model);
+  }
+  setReadingSpread(value: number) { this.readingSpread = value; this.container.dataset.readingSpread = value.toFixed(3); }
+  get currentReadingSpread() { return this.readingSpread; }
+  clearReadingAssembly() {
+    this.readingRequest++;
+    this.setReadingSpread(0);
+    if (this.reading) { this.scene.remove(this.reading.model); this.reading.dispose(); this.reading = undefined; }
+    this.model.visible = true;
+  }
+  readingBounds() {
+    const r = this.renderer.domElement.getBoundingClientRect();
+    const points = [[-2.5,0],[2.5,3.7]].map(([x,y]) => this.model.localToWorld(new THREE.Vector3(x,y,.255)).project(this.camera));
+    const x = points.map(p => r.left + (p.x + 1) * r.width / 2);
+    const y = points.map(p => r.top + (1 - p.y) * r.height / 2);
+    return {left: Math.min(...x), top: Math.min(...y), width: Math.abs(x[1]-x[0]), height: Math.abs(y[1]-y[0])};
   }
   projectCard(x: number, y: number) {
     this.model.updateMatrixWorld(true);

@@ -5,6 +5,13 @@ Upstream: https://github.com/LBEILC/RhineLabUI
 Reference revision inspected: `e27c2b357ed7e7a8c528dcd916cb2c1a059194df`.
 Files imported from the user-provided local snapshot `E:/Repository/RhineLabUI-main` on 2026-09-09. This directory is a source snapshot without Git metadata; the reference revision does not assert an exact snapshot commit.
 
+## 2026-09-09 upstream refresh
+
+Downloaded the GitHub repository at `5abab02367465d9189f4ae65bcb6f17fdb5938f7` into the ignored `.verification/rhine-upstream` reference directory.
+Updated both GLBs and imported `appearance.ts`, `glass-reveal.ts`, and `internal-optics.ts` from that revision. The material integration adopts the new `Index_Inlay` surface and optical compositing; the blog drives glass clarity from its own extraction progress.
+The six assembly groups and depth offsets from the upstream model viewer are shared by `assembly.ts`, the standalone viewer and the blog's reading transition. Scene/article transitions, cancellation, history and summary UI remain blog-owned modules.
+The updated cassette is 3,565,116 bytes and the assembly is 3,343,744 bytes. Model URLs include the revision for cache invalidation. New upstream audio, PWA, responsive layouts and demo content are not imported in this iteration.
+
 The blog owner states that the upstream author has agreed to this reuse. Upstream code is Copyright (c) 2026 LBEILC, MIT. The complete license is distributed at `static/rhine/licenses/RhineLabUI-MIT.txt`.
 
 ## Reused assets and modules

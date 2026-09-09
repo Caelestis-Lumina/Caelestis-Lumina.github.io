@@ -3,19 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createArchiveLighting } from "./archive-lighting";
 import { damp } from "./motion";
 
-const PARTS = [
-  { id: "fasteners", label: "紧固件", en: "FASTENERS", depth: 2.75 },
-  { id: "cover", label: "透明盖板", en: "OPTICAL COVER", depth: 1.85 },
-  {
-    id: "optical-lenses",
-    label: "折射环组",
-    en: "REFRACTIVE RINGS",
-    depth: 0.75,
-  },
-  { id: "optical-core", label: "光学核心", en: "OPTICAL CORE", depth: -0.15 },
-  { id: "substrate", label: "信息基板", en: "SUBSTRATE", depth: -1.1 },
-  { id: "carrier", label: "背板与框架", en: "CARRIER", depth: -2.05 },
-] as const;
+import { PARTS, groupAssembly } from "./assembly.ts";
 
 type ModelSource = { model: THREE.Group; dispose: () => void };
 export class ModelViewer {
@@ -167,16 +155,7 @@ export class ModelViewer {
         return;
       }
       this.source = source;
-      for (const part of PARTS) {
-        const group = new THREE.Group();
-        group.name = part.id;
-        this.groups.set(part.id, group);
-      }
-      for (const child of [...source.model.children]) {
-        const group = this.groups.get(child.userData.assemblyPart ?? "cover");
-        group?.add(child);
-      }
-      for (const group of this.groups.values()) source.model.add(group);
+      this.groups = groupAssembly(source.model);
       source.model.position.set(0, -1.85, 0);
       this.scene.add(source.model);
       this.loading = false;

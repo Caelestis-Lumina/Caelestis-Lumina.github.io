@@ -14,5 +14,7 @@ export function fileLocation(index: number) {
 }
 export function assetUrl(path: string): string {
   const base = new URL(document.querySelector<HTMLMetaElement>('meta[name="knowledge-base"]')!.content, location.href);
-  return new URL(`rhine/${path}`, base).href;
+  const url = new URL(`rhine/${path}`, base);
+  if (path.endsWith(".glb")) url.searchParams.set("v", "5abab02");
+  return url.href;
 }
