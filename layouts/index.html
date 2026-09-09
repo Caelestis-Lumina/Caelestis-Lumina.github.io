@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="{{ site.Language.Locale | default "en" }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ site.Params.description }}">
+  {{- if not hugo.IsProduction }}<meta name="robots" content="noindex,nofollow">{{ end }}
+  <meta name="theme-color" content="#e8e5e1">
+  {{ partial "knowledge-mode.html" "3d" }}
+  <meta name="knowledge-index" content="{{ "knowledge-index.json" | relURL }}">
+  <title>{{ site.Title }} · Knowledge OS</title>
+  <link rel="canonical" href="{{ .Permalink }}">
+  <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
+  <link rel="alternate" type="application/rss+xml" href="{{ "index.xml" | relURL }}" title="{{ site.Title }}">
+  {{ partial "templates/opengraph.html" . }}
+  {{ partial "templates/twitter_cards.html" . }}
+  {{ partial "templates/schema_json.html" . }}
+  {{- with hugo.Data.knowledge -}}
+    {{- range . -}}
+      {{- if .isEntry -}}
+        {{- range .css }}<link rel="stylesheet" href="{{ printf "knowledge/%s" . | relURL }}">{{ end -}}
+        <script type="module" src="{{ printf "knowledge/%s" .file | relURL }}"></script>
+      {{- end -}}
+    {{- end -}}
+  {{- else -}}
+    {{- errorf "Knowledge UI is not built. Run pnpm install && pnpm build before Hugo." -}}
+  {{- end }}
+</head>
+<body>
+  <main id="viewport"><div id="stage"><p class="initial-status">正在连接知识档案… <a href="{{ "classic/" | relURL }}" data-view-mode="classic">切换经典视图 ↗</a></p></div></main>
+  <noscript>
+    <style>#viewport { display: none; } body { overflow: auto; }</style>
+    <section class="nojs-fallback"><h1>{{ site.Title }}</h1><p>三维知识库需要 JavaScript。你仍然可以阅读全部文章。</p>
+    <ul>{{ range (where site.RegularPages "Type" "in" site.Params.mainSections).ByLastmod.Reverse }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>
+    </section>
+  </noscript>
+</body>
+</html>

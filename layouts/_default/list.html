@@ -1,10 +1,11 @@
 {{- define "main" }}
+{{- $isHome := or .IsHome .Params.classicHome }}
 
-{{- if (and site.Params.profileMode.enabled .IsHome) }}
+{{- if (and site.Params.profileMode.enabled $isHome) }}
 {{- partial "index_profile.html" . }}
 {{- else }} {{/* if not profileMode */}}
 
-{{- if not .IsHome | and .Title }}
+{{- if not $isHome | and .Title }}
 <header class="page-header">
   {{- partial "breadcrumbs.html" . }}
   <h1>
@@ -30,7 +31,7 @@
 </header>
 {{- end }}
 
-{{- if and .Content (not .IsHome) }}
+{{- if and .Content (not $isHome) }}
 <div class="post-content">
   {{- if not (.Param "disableAnchoredHeadings") }}
   {{- partial "anchored_headings.html" .Content -}}
@@ -44,7 +45,7 @@
 {{- $pages = .RegularPagesRecursive }}
 {{- end }}
 
-{{- if .IsHome }}
+{{- if $isHome }}
 {{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
 {{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
 {{- end }}
@@ -55,7 +56,7 @@
 {{- $allPosts = site.RegularPages -}}
 {{- end -}}
 
-{{- if and .IsHome (eq $paginator.PageNumber 1) }}
+{{- if and $isHome (eq $paginator.PageNumber 1) }}
 {{- $topicScratch := newScratch }}
 {{- $topTopics := slice }}
 {{- range site.Taxonomies.columns.Alphabetical }}
@@ -154,14 +155,14 @@
 {{- end }}
 
 {{- $term := .Data.Term }}
-{{- if not .IsHome }}
+{{- if not $isHome }}
 {{- range $index, $page := $paginator.Pages }}
 {{- with $page }}
 
 {{- $class := "post-entry" }}
 
 {{- $user_preferred := or site.Params.disableSpecial1stPost site.Params.homeInfoParams }}
-{{- if (and $.IsHome (eq $paginator.PageNumber 1) (eq $index 0) (not $user_preferred)) }}
+{{- if (and $isHome (eq $paginator.PageNumber 1) (eq $index 0) (not $user_preferred)) }}
 {{- $class = "first-entry" }}
 {{- else if $term }}
 {{- $class = "post-entry tag-entry" }}
@@ -207,7 +208,7 @@
 {{- end }}
 {{- end }}
 
-{{- if and (not .IsHome) (gt $paginator.TotalPages 1) }}
+{{- if and (not $isHome) (gt $paginator.TotalPages 1) }}
 <footer class="page-footer">
   <nav class="pagination">
     {{- if $paginator.HasPrev }}

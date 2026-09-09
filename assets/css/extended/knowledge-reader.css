@@ -1,0 +1,17 @@
+/* Only the same-origin article iframe opts into this reading layout. */
+html.knowledge-reader { color-scheme: light; background: #f5f2ec; }
+.knowledge-reader body { --theme: #f5f2ec; --primary: #262820; --secondary: #69675e; --content: #36382f; --entry: #f5f2ec; --code-bg: #e9e5dc; --border: #d6d0c4; --accent: #a47d49; --accent-strong: #886236; --cyan: #a47d49; --cyan-strong: #886236; background: #f5f2ec; }
+.knowledge-reader .header, .knowledge-reader .footer, .knowledge-reader .post-toc-sidebar,
+.knowledge-reader .left-sidebar-controller, .knowledge-reader .reading-rail-handle,
+.knowledge-reader .left-sidebar-toggle, .knowledge-reader .column-sidebar,
+.knowledge-reader .top-link, .knowledge-reader .skip-link { display: none !important; }
+.knowledge-reader body::before { display: none; }
+.knowledge-reader .site-shell { display: block; max-width: 1080px; margin: 0 auto; padding: 18px 32px 60px; }
+.knowledge-reader .main { margin: 0 auto; max-width: 980px; padding: 0; }
+.knowledge-reader .post-single { border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; padding: 12px 0; }
+.knowledge-reader .post-content { font-size: 18px; line-height: 1.9; }
+.knowledge-reader .post-content pre { max-width: 100%; overflow: auto; }
+.knowledge-reader .post-content table { display: block; max-width: 100%; overflow: auto; }
+.knowledge-reader .post-title { font-size: clamp(25px, 3vw, 38px); }
+.knowledge-reader body:not(.home-page) .main > * { opacity: 1; animation: none; transform: none; }
+.knowledge-reader mjx-container[display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 8px 0; }

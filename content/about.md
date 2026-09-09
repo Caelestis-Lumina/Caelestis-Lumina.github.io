@@ -22,6 +22,10 @@ This blog is built with and benefits from the following open-source projects:
 - [PaperMod](https://github.com/adityatelange/hugo-PaperMod) — the foundation of the site theme, licensed under the MIT License.
 - [Fuse.js](https://www.fusejs.io/) — client-side fuzzy search, licensed under Apache License 2.0.
 - [MathJax](https://www.mathjax.org/) — mathematical notation rendering, licensed under Apache License 2.0.
+- [RhineLabUI](https://github.com/LBEILC/RhineLabUI) by LBEILC — the 3D archive models, materials, lighting and motion used by Knowledge OS. Code is distributed with its [MIT notice](/rhine/licenses/RhineLabUI-MIT.txt); model reuse is with the author's permission obtained by the blog owner. The interface is adapted to Caelestis Lumina and this blog's actual articles.
+- [Three.js](https://threejs.org/) — real-time 3D rendering, licensed under MIT.
+- MiSans — local interface fonts, with the [original font license](/rhine/fonts/MiSans-license.pdf).
+- Rolling Number — animated archive counters, with its [MIT notice](/rhine/licenses/rolling-number.txt).
 
 My sincere thanks to the maintainers and contributors of these projects. Their work makes this blog possible and helps knowledge remain open and accessible.
 

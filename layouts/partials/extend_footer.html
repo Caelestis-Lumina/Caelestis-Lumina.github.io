@@ -1,0 +1,7 @@
+{{- /* Signal usable HTML before external math, images or comments finish loading. */ -}}
+<nav class="classic-view-switch" aria-label="页面视图"><a href="{{ "" | relURL }}" data-view-mode="3d">三维视图</a><span aria-current="true">经典视图</span></nav>
+<script>
+  if (window.parent !== window && new URLSearchParams(location.search).get('knowledge-reader') === '1') {
+    window.parent.postMessage({ type: 'cl-knowledge-reader-ready' }, location.origin);
+  }
+</script>

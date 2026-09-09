@@ -1,0 +1,4 @@
+<meta name="knowledge-base" content="{{ "" | relURL }}">
+<meta name="knowledge-canonical-base" content="{{ site.Home.Permalink }}">
+<meta name="knowledge-surface" content="{{ . }}">
+{{ with resources.Get "js/view-mode.js" | minify | fingerprint }}<script src="{{ .RelPermalink }}"></script>{{ end }}

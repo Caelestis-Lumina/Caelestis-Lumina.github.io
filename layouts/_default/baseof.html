@@ -18,7 +18,7 @@
 
 {{- $hasToc := and (eq .Kind "page") (.Param "ShowToc") (gt (len .Fragments.Headings) 0) -}}
 {{- if (or (ne .Kind `page` ) (eq .Layout `archives`) (eq .Layout `search`)) }}
-<body class="list{{ if .IsHome }} home-page{{ end }}" id="top">
+<body class="list{{ if or .IsHome .Params.classicHome }} home-page{{ end }}" id="top">
 {{- else }}
 <body id="top">
 {{- end }}

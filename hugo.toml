@@ -7,7 +7,13 @@ hasCJKLanguage = true
 enableRobotsTXT = true
 
 [outputs]
-home = ["HTML", "RSS", "JSON"]
+home = ["HTML", "RSS", "JSON", "Knowledge"]
+
+[outputFormats.Knowledge]
+mediaType = "application/json"
+baseName = "knowledge-index"
+isPlainText = true
+notAlternative = true
 
 [taxonomies]
 tag = "tags"

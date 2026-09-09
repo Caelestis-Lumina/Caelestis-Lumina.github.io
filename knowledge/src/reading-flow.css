@@ -1,0 +1,13 @@
+.article-overview h3 { font-size: 13px; font-weight: 600; letter-spacing: .1em; color: #8e7655; margin: 25px 0 12px; }
+.article-overview .article-abstract { margin-top: 0; }
+.article-reader[open] { animation: none; }
+.article-reader::backdrop { background: #342e251a; backdrop-filter: none; }
+.article-reader[data-morphing="true"]::backdrop { background: transparent; }
+#stage[data-reading-transition="opening"] #detail-content,
+#stage[data-reading-transition="closing"] #detail-content,
+#stage[data-reading-transition="opening"] .object-caption,
+#stage[data-reading-transition="closing"] .object-caption { visibility: hidden; }
+.reading-transition-status { position: fixed; z-index: 20; bottom: 7vh; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 28px; padding: 14px 22px; color: #544a3c; background: #f3eee4ee; border: 1px solid #c6b69d; font: 14px MiSans, system-ui; }
+.reading-transition-status[hidden] { display: none; }
+.reading-transition-status button { font: inherit; border: 0; background: transparent; cursor: pointer; }
+.reading-transition-status kbd { font-size: 10px; color: #88745a; margin-left: 8px; }

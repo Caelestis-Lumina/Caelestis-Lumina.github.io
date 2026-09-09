@@ -1,0 +1,26 @@
+{{- $articles := slice -}}
+{{- range (where site.RegularPages "Type" "in" site.Params.mainSections).ByLastmod.Reverse -}}
+  {{- if not .Params.hiddenInHomeList -}}
+    {{- $summary := .Params.summary | default .Description | default (.Summary | plainify) -}}
+    {{- $articles = $articles | append (dict
+      "id" .RelPermalink
+      "title" .Title
+      "url" .RelPermalink
+      "summary" ($summary | plainify | truncate 260)
+      "content" .Plain
+      "columns" (.Params.columns | default slice)
+      "tags" (.Params.tags | default slice)
+      "date" (.Lastmod.Format "2006-01-02")
+      "minutes" .ReadingTime
+    ) -}}
+  {{- end -}}
+{{- end -}}
+{{- $pages := slice -}}
+{{- range site.Pages -}}
+  {{- if .RelPermalink -}}
+  {{- $kind := "page" -}}
+  {{- if eq .Kind "term" -}}{{- $kind = .Data.Plural -}}{{- end -}}
+  {{- $pages = $pages | append (dict "url" .RelPermalink "title" .Title "kind" $kind "term" (.Data.Term | default "")) -}}
+  {{- end -}}
+{{- end -}}
+{{- dict "version" 1 "articles" $articles "pages" $pages | jsonify -}}

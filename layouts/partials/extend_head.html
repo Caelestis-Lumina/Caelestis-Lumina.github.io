@@ -1,4 +1,10 @@
 <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+{{ partial "knowledge-mode.html" "classic" }}
+<script>
+  if (window.parent !== window && new URLSearchParams(location.search).get('knowledge-reader') === '1') {
+    document.documentElement.classList.add('knowledge-reader');
+  }
+</script>
 <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)">
 {{- if .IsHome }}
 <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>

@@ -1,6 +1,8 @@
 # Full-Stack Blog (Hugo + PaperMod + GitHub Pages)
 
-基于 Hugo 与 PaperMod 的技术博客模板，支持 Markdown 写作与 GitHub Actions 自动部署到 GitHub Pages。
+基于 Hugo 与 PaperMod 的技术博客，支持 Markdown 写作与 GitHub Actions 自动部署到 GitHub Pages。首页为基于 RhineLabUI 资产构建的三维知识库；独立文章、专栏树与标签页继续使用 Hugo 模板。
+
+三维模块、内容契约、操作方式与验证记录见 [三维知识库说明](docs/knowledge-base.md)，资产来源见 [SOURCES](knowledge/SOURCES.md)。
 
 ## 注意事项
 
@@ -23,20 +25,23 @@
 
 ## 本地运行
 
-1. 安装 Hugo（Extended 版本，推荐 `>= 0.165`，与部署流水线保持一致）。
+1. 安装 Hugo Extended 0.165.0、Node.js 24 和 pnpm 11.19.0，与部署流水线保持一致。
 2. 初始化主题 submodule：
 
    ```bash
    git submodule update --init --recursive
    ```
 
-3. 启动本地预览：
+3. 构建三维界面并启动本地预览：
 
    ```bash
+   pnpm install --frozen-lockfile
+   pnpm test
+   pnpm build
    hugo server -D
    ```
 
-4. 浏览器打开 `http://localhost:1313/`。
+4. 浏览器打开 `http://localhost:1313/`。前端开发时可另开终端运行 `pnpm watch`。
 
 ## 多级专栏
 
@@ -90,6 +95,8 @@ cd Caelestis-Lumina.github.io
 git submodule update --init --recursive
 
 # 3) 本地预览（可选）
+pnpm install --frozen-lockfile
+pnpm build
 hugo server -D
 
 # 4) 提交并推送（触发部署）
