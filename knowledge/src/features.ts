@@ -50,7 +50,6 @@ export class KnowledgeFeatures {
   }
   private action(action: string): boolean {
     if (action === "search") this.search.open();
-    else if (action === "index" || action === "tags") this.navigate(new URL(siteURL(action === "tags" ? "tags/" : "posts/")));
     else if (action === "about") this.navigate(new URL(siteURL("about/")));
     else if (action.startsWith("tag:")) {
       const tag = decodeURIComponent(action.slice(4));
