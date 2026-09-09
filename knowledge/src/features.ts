@@ -7,6 +7,7 @@ import type { Article, SitePage } from "./catalog.ts";
 import type { ModelViewer } from "./rhine/model-viewer.ts";
 import { element, siteURL } from "./dom.ts";
 import { resolveDestination } from "./site-navigation.ts";
+import { ReadingFlow } from "./reading-flow.ts";
 
 /** Feature coordination lives here; rendering never needs to know about URL or DOM readers. */
 export class KnowledgeFeatures {
@@ -17,6 +18,8 @@ export class KnowledgeFeatures {
   private viewer?: ModelViewer;
   private viewerLoading = false;
   private restoring = false;
+  private flow: ReadingFlow;
+  private navigationId = 0;
 
   constructor(private app: KnowledgeApp, private pages: SitePage[]) {
     this.search = new ArchiveSearch(app.catalog.articles, article => {
@@ -24,6 +27,11 @@ export class KnowledgeFeatures {
       element(".file-title").focus();
     });
     this.reader = new ArticleReader(url => this.navigate(url));
+    this.flow = new ReadingFlow(app, this.reader);
+    this.reader.requestClose = () => {
+      if (this.flow.active) void this.flow.close(true);
+      else { this.reader.close(false); this.reader.onClose?.(); }
+    };
     this.reader.onClose = () => {
       if (parseRoute(location.hash)?.page) this.routes.save(this.route(app.currentMode === "detail" ? "detail" : "archive"));
       else this.routes.closeReader(this.route("detail"));
@@ -31,7 +39,7 @@ export class KnowledgeFeatures {
     this.search.onClose = () => this.routes.save(this.route(app.currentMode === "detail" ? "detail" : "archive"));
     this.settings = new Settings(app.prefs, () => app.applyPreferences(), () => app.replay(), () => this.navigate(new URL(siteURL("about/"))));
     app.registerActions(action => this.action(action), () => this.isOverlayOpen());
-    app.suspendScene = () => this.isOverlayOpen();
+    app.suspendScene = () => !this.flow.busy && this.isOverlayOpen();
     app.onFrame = time => this.viewer?.update(time);
     window.addEventListener("resize", () => this.viewer?.resize());
     app.onStateChange = push => {
@@ -39,12 +47,13 @@ export class KnowledgeFeatures {
       classic.href = app.currentMode === "detail" ? app.catalog.articles[app.catalog.selected].url : siteURL("classic/");
       if (!this.restoring && app.currentMode !== "boot")
         this.routes.save(this.route(app.currentMode), push);
+      if (app.currentMode === "detail") void app.renderingScene.prepareReadingAssembly().catch(() => {});
     };
     this.routes.onChange = route => this.restore(route);
     this.restore(parseRoute(location.hash));
   }
 
-  private isOverlayOpen() { return this.search.isOpen || this.reader.isOpen || this.settings.isOpen || Boolean(this.viewer?.isOpen); }
+  private isOverlayOpen() { return this.flow.busy || this.search.isOpen || this.reader.isOpen || this.settings.isOpen || Boolean(this.viewer?.isOpen); }
   private route(view: ArchiveRoute["view"]): ArchiveRoute {
     return {article: this.app.catalog.articles[this.app.catalog.selected].id, view};
   }
@@ -63,15 +72,20 @@ export class KnowledgeFeatures {
     return true;
   }
   private read(article: Article, anchor = "", push = true) {
+    this.navigationId++;
     this.restoring = true;
     if (this.app.catalog.articles[this.app.catalog.selected] !== article)
       this.app.select(this.app.catalog.articles.indexOf(article));
     if (this.app.currentMode !== "detail") this.app.openDetail();
     this.restoring = false;
-    this.reader.show(article, anchor);
+    void this.flow.open(article, anchor);
     this.routes.save(this.route("read"), push);
   }
-  private restore(route: ArchiveRoute | null) {
+  private async restore(route: ArchiveRoute | null) {
+    const ticket = ++this.navigationId;
+    if (this.flow.active && route?.view !== "read") await this.flow.close(false);
+    if (ticket !== this.navigationId) return;
+    this.flow.reset();
     this.restoring = true;
     this.search.close(false);
     this.settings.close(false);
@@ -83,7 +97,7 @@ export class KnowledgeFeatures {
       if (route!.view === "archive") this.app.returnToArchive();
       else {
         if (this.app.currentMode !== "detail") this.app.openDetail();
-        if (route!.view === "read") this.reader.show(this.app.catalog.articles[index]);
+        if (route!.view === "read") void this.flow.open(this.app.catalog.articles[index]);
       }
     } else if (this.app.currentMode !== "boot") this.app.returnToArchive();
     if (route?.page) {
@@ -94,15 +108,18 @@ export class KnowledgeFeatures {
     this.restoring = false;
     if (index < 0 && this.app.currentMode !== "boot") this.routes.save(this.route("archive"));
   }
-  private navigate(url: URL, push = true) {
+  private async navigate(url: URL, push = true) {
+    const ticket = ++this.navigationId;
     const destination = resolveDestination(url, new URL(siteURL("")), this.app.catalog.articles, this.pages);
     if (!destination) {
       this.search.show({query: url.pathname.split("/").filter(Boolean).at(-1) || ""});
       return;
     }
-    this.reader.close(false);
     this.search.close(false);
     if (destination.kind === "article") { this.read(destination.article, destination.anchor, push); return; }
+    if (this.flow.active) await this.flow.close(false);
+    if (ticket !== this.navigationId) return;
+    this.reader.close(false);
     if (destination.kind === "home") { this.app.returnToArchive(); return; }
     if (destination.kind === "index") this.search.show(destination);
     else this.reader.show(destination.page, destination.anchor);

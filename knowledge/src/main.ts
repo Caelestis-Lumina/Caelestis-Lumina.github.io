@@ -2,6 +2,7 @@ import "@kitlangton/rolling-number/styles.css";
 import "./rhine/reference.css";
 import "./styles.css";
 import "./workspace.css";
+import "./reading-flow.css";
 import { parseCatalog } from "./catalog.ts";
 import { KnowledgeApp } from "./app.ts";
 import { element, siteURL } from "./dom.ts";

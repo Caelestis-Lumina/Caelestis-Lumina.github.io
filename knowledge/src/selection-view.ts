@@ -53,7 +53,8 @@ export class SelectionView {
       <h2>${escapeHTML(article.title)}</h2>
       <p class="detail-path">${escapeHTML(article.columns.at(-1) || "Unfiled")}</p>
       <div class="detail-rule"></div>
-      <p class="article-abstract">${escapeHTML(article.summary)}</p>
+      <section class="article-overview" aria-label="文章简要说明"><h3>文章概览</h3>
+      <p class="article-abstract">${escapeHTML(article.summary || article.content.replace(/\s+/g, " ").slice(0, 180))}</p></section>
       <div class="article-tags">${article.tags.map(t => `<button data-action="tag:${escapeHTML(encodeURIComponent(t))}">${escapeHTML(t)}</button>`).join("")}</div>
       <div class="article-actions"><button data-action="read">展开阅读 <span>↗</span></button>
       </div>

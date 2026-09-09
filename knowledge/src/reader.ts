@@ -1,6 +1,7 @@
 import { Dialog } from "./dialog.ts";
 import { element } from "./dom.ts";
 import type { Article } from "./catalog.ts";
+import { tween } from "./transition.ts";
 
 type ReadablePage = Pick<Article, "url" | "title">;
 
@@ -13,6 +14,7 @@ export class ArticleReader extends Dialog {
   private timeout?: ReturnType<typeof setTimeout>;
   private connectedDocuments = new WeakSet<Document>();
   article?: ReadablePage;
+  requestClose?: () => void;
 
   constructor(private follow: (url: URL) => void) {
     super("article-reader", "文章阅读器");
@@ -33,13 +35,12 @@ export class ArticleReader extends Dialog {
     });
   }
 
-  show(article: ReadablePage, anchor = "") {
+  prepare(article: ReadablePage, anchor = "") {
     this.article = article;
     this.pendingAnchor = anchor;
     element("#reader-title", this.root).textContent = article.title;
     element<HTMLAnchorElement>("#reader-original", this.root).href = article.url;
     element("#reader-share", this.root).textContent = "复制场景链接";
-    super.open();
     if (this.loadedURL === article.url) { this.scrollToAnchor(); return; }
     this.loadedURL = article.url;
     this.status.hidden = false;
@@ -52,6 +53,31 @@ export class ArticleReader extends Dialog {
     this.timeout = setTimeout(() => {
       this.status.textContent = "内容载入较慢，请稍候，或切换经典视图继续阅读。";
     }, 15000);
+  }
+
+  show(article: ReadablePage, anchor = "") {
+    this.prepare(article, anchor);
+    super.open();
+  }
+  override close(notify = true) {
+    if (notify && this.requestClose) { this.requestClose(); return; }
+    super.close(notify);
+  }
+  async morph(origin: {left: number; top: number; width: number; height: number}, opening: boolean, reduced: boolean, signal: AbortSignal) {
+    const bounds = this.root.getBoundingClientRect();
+    const clamp = (value: number, size: number) => Math.max(0, Math.min(size, value));
+    const insets = [clamp(origin.top - bounds.top, bounds.height), clamp(bounds.right - origin.left - origin.width, bounds.width),
+      clamp(bounds.bottom - origin.top - origin.height, bounds.height), clamp(origin.left - bounds.left, bounds.width)];
+    this.root.dataset.morphing = "true";
+    const done = await tween(reduced ? 0 : opening ? 450 : 260, signal, progress => {
+      const amount = opening ? 1 - progress : progress;
+      this.root.style.clipPath = `inset(${insets.map(value => `${value * amount}px`).join(" ")})`;
+      this.root.style.opacity = String(1 - amount * .7);
+    });
+    this.root.style.clipPath = "";
+    this.root.style.opacity = "";
+    delete this.root.dataset.morphing;
+    return done;
   }
 
   private loaded() {
