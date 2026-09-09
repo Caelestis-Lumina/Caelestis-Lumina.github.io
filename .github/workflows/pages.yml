@@ -53,6 +53,9 @@ jobs:
       - name: Build Hugo
         run: hugo --minify
 
+      - name: Verify generated site
+        run: pnpm check:site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:

@@ -14,6 +14,8 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 - `knowledge/src/rhine/reference.css`: upstream interface styling, font declarations adapted for the local asset paths.
 - `knowledge/src/shell.html`: adapted upstream static interface markup.
 - MiSans Regular and Bold: upstream official WOFF2 assets; NOTICE and original font license included alongside them. Only the two used weights are distributed.
+- The font sources live in `knowledge/assets/fonts`; Vite emits them with content hashes. License and NOTICE files remain publicly accessible in `static/rhine/fonts`.
+- Three.js: package license copied to `static/rhine/licenses/three-MIT.txt`.
 - Rolling Number: upstream's dependency, with its MIT notice in `static/rhine/licenses/rolling-number.txt`.
 
 ## Intentional adaptations

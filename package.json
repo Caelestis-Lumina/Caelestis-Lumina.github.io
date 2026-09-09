@@ -7,7 +7,8 @@
     "build": "tsc -p knowledge/tsconfig.json && vite build --config knowledge/vite.config.ts",
     "watch": "vite build --watch --config knowledge/vite.config.ts",
     "test": "node --test knowledge/tests/*.test.ts",
-    "check": "tsc -p knowledge/tsconfig.json"
+    "check": "tsc -p knowledge/tsconfig.json",
+    "check:site": "node knowledge/scripts/check-site.mjs"
   },
   "dependencies": {
     "@kitlangton/rolling-number": "0.4.1",

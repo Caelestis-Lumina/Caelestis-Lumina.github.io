@@ -19,7 +19,14 @@ export default defineConfig({
     manifest: true,
     rollupOptions: {
       input: fileURLToPath(new URL("./src/main.ts", import.meta.url)),
-      output: { entryFileNames: "app-[hash].js", chunkFileNames: "[name]-[hash].js" },
+      output: {
+        entryFileNames: "app-[hash].js", chunkFileNames: "[name]-[hash].js",
+        manualChunks(id) {
+          // Keep the large, stable renderer cached across blog UI iterations.
+          if (id.includes("/three/build/three.core.js")) return "three-core";
+          if (id.includes("/three/")) return "three-renderer";
+        },
+      },
     },
   },
 });

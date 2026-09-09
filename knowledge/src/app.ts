@@ -38,6 +38,15 @@ export class KnowledgeApp {
     this.stage.querySelectorAll<HTMLAnchorElement>("[data-site-link]").forEach(link => link.href = siteURL(link.dataset.siteLink!));
     this.boot = new BootController(this.stage, () => this.enterArchive());
     this.view = new SelectionView(this.catalog);
+    this.view.update(false);
+    this.stage.dataset.mode = "boot";
+    this.stage.dataset.boot = "access";
+    ["#archive-ui", ".system-nav", ".system-footer"].forEach(selector => {
+      element(selector).inert = true;
+      element(selector).setAttribute("aria-hidden", "true");
+    });
+    element<HTMLButtonElement>("#skip").disabled = true;
+    element("#loading").setAttribute("role", "status");
     this.fit();
     window.addEventListener("resize", () => this.fit());
     document.addEventListener("visibilitychange", () => this.schedule());
@@ -90,6 +99,7 @@ export class KnowledgeApp {
       }
     };
     this.ready = true;
+    element<HTMLButtonElement>("#skip").disabled = false;
     this.applyPreferences();
     this.select(0);
     element("#loading").classList.add("loaded");

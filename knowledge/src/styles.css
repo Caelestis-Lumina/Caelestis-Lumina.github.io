@@ -30,7 +30,8 @@ a:focus-visible, select:focus-visible { outline: 2px solid #a67d48; outline-offs
 .article-actions button span { margin-left: 55px; }
 .article-actions a { font-size: 13px; border-bottom: 1px solid #a39681; padding: 8px 0; }
 .reading-note { color: #8b8274; font-size: 12px; margin-top: 20px; }
-.initial-status, noscript { position: fixed; inset: 40% 15% auto; font: 18px system-ui; line-height: 2; }
+.initial-status { position: fixed; inset: 40% 15% auto; font: 18px system-ui; line-height: 2; }
+.nojs-fallback { max-width: 60rem; margin: 5rem auto; padding: 0 2rem; font: 18px/2 system-ui; }
 .loading.loaded { visibility: hidden; transition: opacity .5s, visibility .5s; }
 [data-reduced="true"] *, [data-reduced="true"] *::before, [data-reduced="true"] *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; } }

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="{{ site.Params.description }}">
+  {{- if not hugo.IsProduction }}<meta name="robots" content="noindex,nofollow">{{ end }}
   <meta name="theme-color" content="#e8e5e1">
   <meta name="knowledge-base" content="{{ "" | relURL }}">
   <meta name="knowledge-index" content="{{ "knowledge-index.json" | relURL }}">
@@ -11,6 +12,9 @@
   <link rel="canonical" href="{{ .Permalink }}">
   <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
   <link rel="alternate" type="application/rss+xml" href="{{ "index.xml" | relURL }}" title="{{ site.Title }}">
+  {{ partial "templates/opengraph.html" . }}
+  {{ partial "templates/twitter_cards.html" . }}
+  {{ partial "templates/schema_json.html" . }}
   {{- with hugo.Data.knowledge -}}
     {{- range . -}}
       {{- if .isEntry -}}
@@ -24,6 +28,11 @@
 </head>
 <body>
   <main id="viewport"><div id="stage"><p class="initial-status">正在连接知识档案… <a href="{{ "posts/" | relURL }}">浏览文章列表 ↗</a></p></div></main>
-  <noscript><p>三维知识库需要 JavaScript。<a href="{{ "posts/" | relURL }}">浏览全部文章</a></p></noscript>
+  <noscript>
+    <style>#viewport { display: none; } body { overflow: auto; }</style>
+    <section class="nojs-fallback"><h1>{{ site.Title }}</h1><p>三维知识库需要 JavaScript。你仍然可以阅读全部文章。</p>
+    <ul>{{ range (where site.RegularPages "Type" "in" site.Params.mainSections).ByLastmod.Reverse }}<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}</ul>
+    </section>
+  </noscript>
 </body>
 </html>
