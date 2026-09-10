@@ -44,6 +44,7 @@ export class ReadingFlow {
     try { await this.app.renderingScene.prepareReadingAssembly(); }
     catch (error) { console.warn("Reading animation unavailable; continuing with article", error); }
     if (signal.aborted) return;
+    this.app.renderingScene.setReadingArticle(article);
     // Direct links can reach this flow before the extraction camera has settled.
     const started = performance.now();
     while (this.app.renderingScene.detailVisibility < .95 && performance.now() - started < 1800) {

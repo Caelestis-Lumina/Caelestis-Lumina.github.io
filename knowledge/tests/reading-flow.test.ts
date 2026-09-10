@@ -12,6 +12,7 @@ function setup() {
   let release!: () => void;
   const preparation = new Promise<void>(resolve => release = resolve);
   const scene = {detailVisibility: 1, currentReadingSpread: 0, prepareReadingAssembly: () => preparation,
+    setReadingArticle() {},
     setReadingSpread(value: number) { this.currentReadingSpread = value; },
     resetReadingAssembly() { this.currentReadingSpread = 0; },
     clearReadingAssembly() { this.currentReadingSpread = 0; }, readingBounds: () => ({left: 0, top: 0, width: 100, height: 100})};

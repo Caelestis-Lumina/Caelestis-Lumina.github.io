@@ -3,6 +3,21 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {readingPose, ReadingShot} from '../src/rhine/reading-shot.ts';
 import {groupAssembly} from '../src/rhine/assembly.ts';
+import {PaperSurface} from '../src/rhine/paper-surface.ts';
+
+test('sheet stays within its slot, bends while extracting and becomes exactly flat for reading', () => {
+  const paper = new PaperSurface();
+  const vertices = paper.geometry.attributes.position;
+  paper.deform(0, 0);
+  for (let i = 0; i < vertices.count; i++) assert.equal(vertices.getY(i), .5);
+  paper.deform(.5, 0);
+  assert.ok(vertices.getZ(0) > .05, 'leading edge should bend toward the reader');
+  for (let i = 0; i < vertices.count; i++) assert.ok(vertices.getY(i) >= 0, 'tail cannot show below the slot');
+  paper.deform(1, 1);
+  for (let i = 0; i < vertices.count; i++) assert.equal(vertices.getZ(i), 0);
+  assert.equal(vertices.getY(vertices.count - 1), -.5);
+  paper.dispose();
+});
 
 test('paper is extracted after centering and opening, then approaches the screen', () => {
   assert.deepEqual(readingPose(0), {lift:0, center:0, open:0, paper:0, approach:0});

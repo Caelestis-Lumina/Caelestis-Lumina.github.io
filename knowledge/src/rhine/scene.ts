@@ -11,6 +11,7 @@ import { CardAppearance } from "./appearance";
 import { configureInternalOptics } from "./internal-optics.ts";
 import { groupAssembly } from "./assembly.ts";
 import { ReadingShot } from "./reading-shot.ts";
+import type { Article } from "../catalog.ts";
 import { fileLocation, archiveColumns, assetUrl } from "./data";
 import {
   cellKey,
@@ -1193,6 +1194,7 @@ export class ArchiveScene {
     this.reading.shot.set(value);
   }
   get currentReadingSpread() { return this.readingSpread; }
+  setReadingArticle(article: Article) { this.reading?.shot.paper.setArticle(article); }
   resetReadingAssembly() {
     this.readingSpread = 0;
     this.container.dataset.readingSpread = "0";

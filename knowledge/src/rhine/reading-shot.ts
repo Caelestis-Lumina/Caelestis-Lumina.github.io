@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {PaperSurface} from './paper-surface.ts';
 
 const segment = (t: number, start: number, end: number) => {
   const x = THREE.MathUtils.clamp((t - start) / (end - start), 0, 1);
@@ -12,8 +13,7 @@ export function readingPose(t: number) {
 }
 
 export class ReadingShot {
-  readonly paper = new THREE.Mesh(new THREE.PlaneGeometry(1, 1),
-    new THREE.MeshBasicMaterial({color: '#f5f2ec', side: THREE.DoubleSide, toneMapped: false, fog: false}));
+  readonly paper = new PaperSurface();
   private start = new THREE.Vector3();
   private orientation = new THREE.Quaternion();
   private center = new THREE.Vector3();
@@ -28,8 +28,8 @@ export class ReadingShot {
   active = false;
   dirty = true;
   private progress = 0;
-  private edge = new THREE.LineSegments(new THREE.EdgesGeometry(this.paper.geometry),
-    new THREE.LineBasicMaterial({color: '#a99a83', transparent: true, opacity: .3, toneMapped: false, fog: false}));
+  private mouth = new THREE.Mesh(new THREE.PlaneGeometry(4.35, .035),
+    new THREE.MeshBasicMaterial({color: '#796c59', transparent: true, opacity: 0, depthWrite: false}));
   private model: THREE.Group;
   private groups: Map<string, THREE.Group>;
   private scene: THREE.Scene;
@@ -39,7 +39,8 @@ export class ReadingShot {
     this.groups = groups;
     this.scene = scene;
     this.paper.visible = false;
-    this.paper.add(this.edge);
+    this.mouth.position.set(0, 3.4, .34);
+    model.add(this.mouth);
     scene.add(this.paper);
   }
 
@@ -65,21 +66,24 @@ export class ReadingShot {
   update(camera: THREE.PerspectiveCamera, viewport: {width: number; height: number}) {
     const p = readingPose(this.progress);
     // Give the rising sheet headroom before it travels toward the lens.
-    camera.fov = this.fieldOfView * (1 + .4 * p.center);
+    camera.fov = this.fieldOfView * (1 + .55 * p.center);
     camera.updateProjectionMatrix();
     this.point.copy(this.start).addScaledVector(this.up, .8 * p.lift);
-    this.landing.copy(this.center).addScaledVector(this.up, -1.85);
+    this.landing.copy(this.center).addScaledVector(this.up, -2.2);
     this.model.position.copy(this.point).lerp(this.landing, p.center);
     this.model.quaternion.copy(this.orientation).slerp(this.cameraOrientation, p.center);
     this.model.visible = true;
     for (const name of ['cover', 'fasteners']) {
       const group = this.groups.get(name)!;
-      group.rotation.y = -.85 * p.open;
-      group.position.set(-1.4 * p.open, 0, 1.2 * p.open);
+      // Rotate around the left edge of the cassette instead of sliding its lid away.
+      const angle = -1.12 * p.open;
+      group.rotation.y = angle;
+      group.position.set(-2.5 + 2.5 * Math.cos(angle), 0, -2.5 * Math.sin(angle));
     }
+    this.mouth.material.opacity = .22 * p.open * (1 - p.approach);
     this.model.updateMatrixWorld(true);
     // A real sheet slides out of the top of the opened cassette before approaching the lens.
-    this.point.set(0, 1.85 + p.paper * 1.9, .38 + p.paper * 2).applyMatrix4(this.model.matrixWorld);
+    this.point.set(0, 1.875 + p.paper * 3.05, .32 + p.approach * .8).applyMatrix4(this.model.matrixWorld);
     const near = this.depth * .3;
     this.landing.copy(this.cameraPosition).addScaledVector(this.forward, near);
     this.paper.position.copy(this.point).lerp(this.landing, p.approach);
@@ -88,15 +92,17 @@ export class ReadingShot {
     const widthFraction = Math.min(1760 / viewport.width, .96);
     this.paper.scale.set(THREE.MathUtils.lerp(4.3, height * camera.aspect * widthFraction, p.approach),
       THREE.MathUtils.lerp(3.05, height * .96, p.approach), 1);
-    this.paper.visible = p.open > .1;
+    this.paper.deform(p.paper, p.approach);
+    this.paper.visible = p.paper > 0;
     this.paper.updateMatrixWorld(true);
     this.dirty = false;
   }
 
   bounds(camera: THREE.Camera, viewport: {left: number; top: number; width: number; height: number}) {
     this.paper.updateMatrixWorld(true);
-    const points = [[-.5,-.5],[-.5,.5],[.5,-.5],[.5,.5]].map(([x,y]) =>
-      new THREE.Vector3(x,y,0).applyMatrix4(this.paper.matrixWorld).project(camera));
+    const positions = this.paper.geometry.attributes.position;
+    const points = Array.from({length: positions.count}, (_, i) =>
+      new THREE.Vector3().fromBufferAttribute(positions, i).applyMatrix4(this.paper.matrixWorld).project(camera));
     const x = points.map(p => viewport.left + (p.x + 1) * viewport.width / 2);
     const y = points.map(p => viewport.top + (1 - p.y) * viewport.height / 2);
     return {left: Math.min(...x), top: Math.min(...y), width: Math.max(...x)-Math.min(...x), height: Math.max(...y)-Math.min(...y)};
@@ -104,10 +110,10 @@ export class ReadingShot {
 
   dispose() {
     this.scene.remove(this.paper);
-    this.paper.geometry.dispose();
-    this.paper.material.dispose();
-    this.edge.geometry.dispose();
-    this.edge.material.dispose();
+    this.paper.dispose();
+    this.model.remove(this.mouth);
+    this.mouth.geometry.dispose();
+    this.mouth.material.dispose();
   }
 
   reset(camera: THREE.PerspectiveCamera) {
