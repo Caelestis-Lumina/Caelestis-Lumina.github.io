@@ -1,7 +1,5 @@
 import { bootMotion, progress, smooth } from "./boot-motion";
-import { bootMarkStrokes } from "./brand";
 
-const ns = "http://www.w3.org/2000/svg";
 const arc = (r: number, start: number, sweep: number, x = 960, y = 540) => {
   const point = (a: number) => `${x + Math.cos(a) * r},${y + Math.sin(a) * r}`;
   return `M${point(start)}A${r},${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${point(start + Math.min(sweep, Math.PI * 1.999))}`;
@@ -11,8 +9,6 @@ export class BootSequence {
   private nodes: Map<string, HTMLElement> = new Map();
   private strokes: SVGPathElement[];
   private letters: SVGTextElement;
-  private plus: SVGPathElement;
-  private minus: SVGPathElement;
   private brandLines: HTMLElement[];
   private scanPaths: SVGPathElement[];
   private orbitDots: SVGCircleElement[];
@@ -40,31 +36,12 @@ export class BootSequence {
       ".boot-white",
     ].forEach((s) => this.nodes.set(s, stage.querySelector<HTMLElement>(s)!));
     const mark = stage.querySelector<SVGSVGElement>(".boot-logo svg")!;
-    const original = mark.querySelector("path")!;
-    this.strokes = bootMarkStrokes.map((d) => {
-      const path = original.cloneNode() as SVGPathElement;
-      path.setAttribute("d", d);
+    this.strokes = Array.from(mark.querySelectorAll<SVGPathElement>('[data-cl-stroke]'));
+    this.strokes.forEach(path => {
       path.setAttribute("pathLength", "1");
       path.style.strokeDasharray = "1";
-      mark.insertBefore(path, original);
-      return path;
     });
-    original.remove();
-    const symbols = mark.querySelector("path:not([pathLength])")!;
-    this.plus = document.createElementNS(ns, "path");
-    this.plus.setAttribute("d", "M258 16V42M245 29H271");
-    this.minus = document.createElementNS(ns, "path");
-    this.minus.setAttribute("d", "M285 128h8");
-    [this.plus, this.minus].forEach((p) => {
-      p.setAttribute("stroke", "currentColor");
-      p.setAttribute("stroke-width", "15");
-      mark.insertBefore(p, symbols);
-    });
-    symbols.remove();
     this.letters = mark.querySelector("text")!;
-    this.letters.setAttribute("text-anchor", "start");
-    this.letters.setAttribute("x", "18");
-    this.letters.setAttribute("letter-spacing", "2");
     this.brandLines = Array.from(
       stage.querySelector(".brand")!.children,
     ) as HTMLElement[];
@@ -99,9 +76,6 @@ export class BootSequence {
         )),
     );
     this.letters.textContent = s.logoLetters;
-    this.plus.style.opacity = String(s.plus);
-    this.minus.style.opacity = String(s.minus);
-    this.plus.setAttribute("transform", `rotate(${s.plusAngle} 69 70)`);
     this.opacity(".auth-status", s.authOpacity);
     this.el("#auth-message").textContent = s.auth;
     this.opacity(".brand", 1);

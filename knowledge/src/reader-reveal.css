@@ -1,0 +1,2 @@
+.reader-page { position: relative; display: flex; flex: 1; min-width: 0; overflow: hidden; }
+.article-reader[data-surface="blank"] > * { opacity: 0; pointer-events: none; }

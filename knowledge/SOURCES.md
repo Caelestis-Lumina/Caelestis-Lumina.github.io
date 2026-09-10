@@ -27,11 +27,12 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 
 ## Intentional adaptations
 
-- Blog-authored `brand.ts` replaces the interface/printed mark with the existing C/L blog identity.
+- Blog-authored `brand.ts` derives the interface/printed mark from `static/favicon.svg`, keeping the C/L geometry, stroke weight and alignment shared with the browser icon. Boot animation draws those same strokes without rotating ornaments around an offset pivot.
 - `data.ts` bridges the independent blog catalog into the scene. Fixed demo essays are not imported.
 - The scene tracks selected article identity separately from render-pool slots; asset paths respect the site's base path, and lane rebasing uses the actual column count. Row rebasing is disabled because unequal lane lengths have no small common period.
 - Boot text and canvas labels identify Caelestis Lumina; calibrated spatial motion and baseline lighting are retained.
 - App orchestration, catalog/navigation, preferences, search and reading are maintained outside the upstream-derived modules.
 - Homepage selection uses panel-free leader lines and typography, with centered transparent column controls. `scrub-title.ts` replaces the demo's flashing black strip with an interruptible, readable title reveal.
+- `reading-shot.ts` is blog-authored choreography over the upstream assembly groups. `paper-surface.ts` provides a rigid four-vertex blank plane with clipping at the slot and a fixed aspect ratio; no bending or article thumbnail textures. `reader-reveal.ts` measures actual visible article glyphs for a brief decoding mask inside the iframe, including cached reopenings, without rewriting article text or layout. No new external models or textures are included. The standalone model viewer has been removed.
 
 Upstream's MIT grant applies to its own code, not automatically to third-party marks or non-code assets. Model assets are reused under the permission reported by the blog owner, not relabeled as MIT. Original Arknights-related rights remain with their respective owners. No reference video or upstream demo essays are distributed.

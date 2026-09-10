@@ -1,4 +1,10 @@
-.classic-view-switch { position: fixed; right: 24px; bottom: 24px; z-index: 50; display: flex; gap: 4px; padding: 5px; background: var(--theme); border: 1px solid var(--border); border-radius: 30px; box-shadow: 0 4px 22px #0002; font-size: 13px; }
+.classic-view-switch { position: fixed; right: 24px; top: 8px; z-index: 121; display: flex; gap: 4px; padding: 5px; background: var(--theme); border: 1px solid var(--border); border-radius: 30px; box-shadow: 0 4px 22px #0002; font-size: 13px; }
 .classic-view-switch a, .classic-view-switch span { padding: 8px 16px; border-radius: 24px; }
 .classic-view-switch span { background: var(--primary); color: var(--theme); }
+/* Reserve space in the sticky header so its navigation never sits under the switch. */
+.header { padding-inline-end: 224px; }
+@media (max-width: 600px) {
+  .classic-view-switch { right: 16px; }
+  .header { padding-inline-end: 0; padding-top: 60px; }
+}
 .knowledge-reader .classic-view-switch { display: none; }

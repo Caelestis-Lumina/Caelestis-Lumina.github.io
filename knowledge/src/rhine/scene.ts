@@ -9,7 +9,8 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { BokehPass } from "three/addons/postprocessing/BokehPass.js";
 import { CardAppearance } from "./appearance";
 import { configureInternalOptics } from "./internal-optics.ts";
-import { groupAssembly, spreadAssembly } from "./assembly.ts";
+import { groupAssembly } from "./assembly.ts";
+import { ReadingShot } from "./reading-shot.ts";
 import { fileLocation, archiveColumns, assetUrl } from "./data";
 import {
   cellKey,
@@ -52,6 +53,8 @@ export class ArchiveScene {
   private ao: SSAOPass;
   private bokeh: BokehPass;
   private instances: THREE.InstancedMesh[] = [];
+  private pickInstances?: THREE.InstancedMesh;
+  private pickSelected?: THREE.Mesh;
   private model = new THREE.Group();
   private appearance = new CardAppearance();
   private cursor = new THREE.Vector2();
@@ -104,7 +107,8 @@ export class ArchiveScene {
   private labelMark = new Image();
   private reduced = false;
   private highQuality = true;
-  private reading?: {model: THREE.Group; dispose: () => void; groups: Map<string, THREE.Group>};
+  private reading?: {model: THREE.Group; dispose: () => void; shot: ReadingShot};
+  private readingPreparation?: Promise<void>;
   private readingRequest = 0;
   private readingSpread = 0;
   private clarity = 0;
@@ -127,6 +131,7 @@ export class ArchiveScene {
         Math.min(innerWidth / 1920, innerHeight / 1080),
     );
     this.renderer.setSize(container.clientWidth, container.clientHeight);
+    this.renderer.localClippingEnabled = true;
     this.renderer.info.autoReset = false;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -184,7 +189,6 @@ export class ArchiveScene {
     });
     this.composer.addPass(this.bokeh);
     this.composer.addPass(new OutputPass());
-    this.bindPointer();
   }
   async load() {
     this.labelMark.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(labelMarkSvg)}`;
@@ -367,6 +371,7 @@ export class ArchiveScene {
     this.scene.add(this.model);
     this.model.position.copy(this.positions[this.selectedSlot]);
     this.loaded = true;
+    this.bindPointer();
   }
 
   private assemblyTemplate?: Promise<THREE.Group>;
@@ -608,9 +613,17 @@ export class ArchiveScene {
     this.composer.setSize(w, h);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
+    if (this.reading) this.reading.shot.dirty = true;
   }
   private bindPointer() {
     const canvas = this.renderer.domElement;
+    // Picking a cassette needs its volume, not every decorative triangle in its GLB.
+    const pickGeometry = new THREE.BoxGeometry(5, 3.7, .6).translate(0, 1.85, 0);
+    const pickMaterial = new THREE.MeshBasicMaterial();
+    this.pickInstances = new THREE.InstancedMesh(pickGeometry, pickMaterial, this.positions.length);
+    this.pickInstances.instanceMatrix = this.instances[0].instanceMatrix;
+    this.pickInstances.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1000);
+    this.pickSelected = new THREE.Mesh(pickGeometry, pickMaterial);
     const gesture = new ArchiveGesture();
     let pointerId: number | null = null;
     let inspecting = false;
@@ -620,7 +633,9 @@ export class ArchiveScene {
       const r = canvas.getBoundingClientRect();
       this.cursor.set(((e.clientX - r.left) / r.width) * 2 - 1, 1 - ((e.clientY - r.top) / r.height) * 2);
       this.raycaster.setFromCamera(this.cursor, this.camera);
-      return this.raycaster.intersectObjects([this.instances[0], this.model], true)[0];
+      this.model.updateMatrixWorld(true);
+      this.pickSelected!.matrixWorld.copy(this.model.matrixWorld);
+      return this.raycaster.intersectObjects([this.pickInstances!, this.pickSelected!], false)[0];
     };
     this.cancelPointer = () => {
       const captured = pointerId;
@@ -693,6 +708,14 @@ export class ArchiveScene {
     this.last = time;
     this.clock = time;
     if (!this.loaded) return;
+    if (this.reading?.shot.active) {
+      if (this.reading.shot.dirty) {
+        this.reading.shot.update(this.camera, this.renderer.domElement.getBoundingClientRect());
+        this.renderer.info.reset();
+        this.composer.render();
+      }
+      return;
+    }
     const blend = 1 - Math.exp(-dt * (this.reduced ? 35 : 2.8));
     this.reveal = cinematic
       ? cinematic.reveal
@@ -1136,34 +1159,66 @@ export class ArchiveScene {
     bokehUniforms.focus.value = -focalPoint.z;
     bokehUniforms.aperture.value = THREE.MathUtils.lerp(0.0003, 0.0008, detail);
     this.renderer.info.reset();
-    if (this.reading) {
-      this.reading.model.position.copy(this.model.position);
-      this.reading.model.quaternion.copy(this.model.quaternion);
-      spreadAssembly(this.reading.groups, this.readingSpread);
-      this.reading.model.visible = this.readingSpread > 0 && this.targetDetail === 1;
-      this.model.visible = !this.reading.model.visible;
-    }
     this.composer.render();
   }
-  async prepareReadingAssembly() {
-    if (this.reading) return;
+  prepareReadingAssembly(): Promise<void> {
+    if (this.reading) return Promise.resolve();
+    if (this.readingPreparation) return this.readingPreparation;
     const ticket = ++this.readingRequest;
-    const source = await this.createAssemblyModel();
-    if (ticket !== this.readingRequest || this.targetDetail !== 1) { source.dispose(); return; }
-    this.reading = {...source, groups: groupAssembly(source.model)};
-    source.model.visible = false;
-    this.scene.add(source.model);
+    const pending = (async () => {
+      const source = await this.createAssemblyModel();
+      try {
+        // Compile before the first visible frame. Concurrent prefetch/read calls share this work.
+        await this.renderer.compileAsync(source.model, this.camera, this.scene);
+        if (ticket !== this.readingRequest || this.targetDetail !== 1) { source.dispose(); return; }
+        const shot = new ReadingShot(source.model, groupAssembly(source.model), this.scene);
+        this.reading = {...source, shot};
+        source.model.visible = false;
+        this.scene.add(source.model);
+      } catch (error) { source.dispose(); throw error; }
+    })();
+    this.readingPreparation = pending;
+    void pending.finally(() => { if (this.readingPreparation === pending) this.readingPreparation = undefined; }).catch(() => {});
+    return pending;
   }
-  setReadingSpread(value: number) { this.readingSpread = value; this.container.dataset.readingSpread = value.toFixed(3); }
+  setReadingSpread(value: number) {
+    this.readingSpread = value;
+    this.container.dataset.readingSpread = value.toFixed(3);
+    if (!this.reading) return;
+    if (!this.reading.shot.active) {
+      this.reading.shot.begin(this.model, this.camera);
+      this.model.visible = false;
+      this.bokeh.enabled = false;
+      this.renderer.shadowMap.autoUpdate = false;
+    }
+    this.reading.shot.set(value);
+  }
   get currentReadingSpread() { return this.readingSpread; }
+  resetReadingAssembly() {
+    this.readingSpread = 0;
+    this.container.dataset.readingSpread = "0";
+    this.reading?.shot.reset(this.camera);
+    this.bokeh.enabled = this.highQuality;
+    this.renderer.shadowMap.autoUpdate = true;
+    this.model.visible = true;
+  }
   clearReadingAssembly() {
     this.readingRequest++;
-    this.setReadingSpread(0);
-    if (this.reading) { this.scene.remove(this.reading.model); this.reading.dispose(); this.reading = undefined; }
-    this.model.visible = true;
+    this.readingPreparation = undefined;
+    this.resetReadingAssembly();
+    if (this.reading) { this.scene.remove(this.reading.model); this.reading.shot.dispose(); this.reading.dispose(); this.reading = undefined; }
   }
   readingBounds() {
     const r = this.renderer.domElement.getBoundingClientRect();
+    if (this.reading?.shot.active) {
+      if (this.reading.shot.dirty) {
+        // Commit the GPU pose before its DOM follower so the two never trail by one frame.
+        this.reading.shot.update(this.camera, r);
+        this.renderer.info.reset();
+        this.composer.render();
+      }
+      return this.reading.shot.bounds(this.camera, r);
+    }
     const points = [[-2.5,0],[2.5,3.7]].map(([x,y]) => this.model.localToWorld(new THREE.Vector3(x,y,.255)).project(this.camera));
     const x = points.map(p => r.left + (p.x + 1) * r.width / 2);
     const y = points.map(p => r.top + (1 - p.y) * r.height / 2);

@@ -1,5 +1,6 @@
 /** A cancelled visual transition resolves false and never commits its final frame. */
-export function tween(duration: number, signal: AbortSignal, paint: (progress: number) => void): Promise<boolean> {
+export function tween(duration: number, signal: AbortSignal, paint: (progress: number) => void,
+  easing = (t: number) => t * t * (3 - 2 * t)): Promise<boolean> {
   if (signal.aborted) return Promise.resolve(false);
   if (!duration) { paint(1); return Promise.resolve(true); }
   return new Promise(resolve => {
@@ -13,7 +14,7 @@ export function tween(duration: number, signal: AbortSignal, paint: (progress: n
     const abort = () => finish(false);
     const tick = (now: number) => {
       const progress = Math.min(1, (now - start) / duration);
-      paint(progress * progress * (3 - 2 * progress));
+      paint(easing(progress));
       if (progress === 1) finish(true);
       else frame = requestAnimationFrame(tick);
     };

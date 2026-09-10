@@ -2,6 +2,7 @@ import type {KnowledgeApp} from "./app.ts";
 import type {Article} from "./catalog.ts";
 import type {ArticleReader} from "./reader.ts";
 import {tween} from "./transition.ts";
+import {READING_MOTION, readingHandoff} from './reading-motion.ts';
 
 /** Owns the reversible handoff from the physical cassette to the reading surface. */
 export class ReadingFlow {
@@ -41,21 +42,29 @@ export class ReadingFlow {
   async open(article: Article, anchor = "") {
     const continuing = this.reader.isOpen && this.phase === "reading";
     const signal = this.begin("opening");
-    this.reader.prepare(article, anchor);
     try { await this.app.renderingScene.prepareReadingAssembly(); }
     catch (error) { console.warn("Reading animation unavailable; continuing with article", error); }
     if (signal.aborted) return;
     // Direct links can reach this flow before the extraction camera has settled.
     const started = performance.now();
-    while (this.app.renderingScene.detailVisibility < .99 && performance.now() - started < 8000) {
+    while (this.app.renderingScene.detailVisibility < .95 && performance.now() - started < 1800) {
       if (!await tween(50, signal, () => {})) return;
     }
     const from = this.app.renderingScene.currentReadingSpread;
-    if (!await tween(this.app.prefs.reduced || continuing ? 0 : 650, signal,
-      progress => this.app.renderingScene.setReadingSpread(from + (1 - from) * progress))) return;
-    this.reader.show(article, anchor);
-    if (!continuing && !await this.reader.morph(this.app.renderingScene.readingBounds(), true, this.app.prefs.reduced, signal)) return;
+    let handoffStarted = false;
+    if (!await tween(this.app.prefs.reduced || continuing ? 0 : READING_MOTION.open * (1 - from), signal, progress => {
+      const position = from + (1 - from) * progress;
+      this.app.renderingScene.setReadingSpread(position);
+      if (!continuing && position >= READING_MOTION.handoff) {
+        if (!handoffStarted) {
+          this.reader.openSurface(); this.reader.beginHandoff(); handoffStarted = true;
+        }
+        this.reader.followSurface(this.app.renderingScene.readingBounds(), readingHandoff(position));
+      }
+    }, t => t)) return;
     if (!signal.aborted) {
+      this.reader.endHandoff();
+      this.reader.show(article, anchor);
       this.setPhase("reading");
       this.reader.root.querySelector<HTMLIFrameElement>("iframe")?.focus();
     }
@@ -63,20 +72,26 @@ export class ReadingFlow {
   async close(notify = false) {
     if (this.phase === "closing") return;
     const signal = this.begin("closing");
-    if (this.reader.isOpen && !await this.reader.morph(this.app.renderingScene.readingBounds(), false, this.app.prefs.reduced, signal)) return;
-    this.reader.close(false);
+    if (this.reader.isOpen) this.reader.beginHandoff();
     const from = this.app.renderingScene.currentReadingSpread;
-    if (!await tween(this.app.prefs.reduced ? 0 : 550 * from, signal,
-      progress => this.app.renderingScene.setReadingSpread(from * (1 - progress)))) return;
-    this.app.renderingScene.clearReadingAssembly();
+    if (!await tween(this.app.prefs.reduced ? 0 : READING_MOTION.close * from, signal, progress => {
+      const position = from * (1 - progress);
+      this.app.renderingScene.setReadingSpread(position);
+      if (this.reader.isOpen) {
+        this.reader.followSurface(this.app.renderingScene.readingBounds(), readingHandoff(position));
+        if (position <= READING_MOTION.handoff) this.reader.close(false);
+      }
+    }, t => t)) return;
+    this.reader.close(false);
+    this.app.renderingScene.resetReadingAssembly();
     this.setPhase("idle");
     this.app.root.querySelector<HTMLButtonElement>('[data-action="read"]')?.focus({preventScroll: true});
     if (notify) this.reader.onClose?.();
   }
-  reset() {
+  reset(keepAssembly = false) {
     this.controller.abort();
     this.reader.close(false);
-    this.app.renderingScene.clearReadingAssembly();
+    if (!keepAssembly) this.app.renderingScene.clearReadingAssembly();
     this.setPhase("idle");
   }
 }

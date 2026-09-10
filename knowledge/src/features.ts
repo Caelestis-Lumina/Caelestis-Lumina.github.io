@@ -79,7 +79,8 @@ export class KnowledgeFeatures {
     const ticket = ++this.navigationId;
     if (this.flow.active && route?.view !== "read") await this.flow.close(false);
     if (ticket !== this.navigationId) return;
-    this.flow.reset();
+    this.flow.reset(route?.view === "detail" && this.app.currentMode === "detail" &&
+      route.article === this.app.catalog.articles[this.app.catalog.selected].id);
     this.restoring = true;
     this.search.close(false);
     this.settings.close(false);
