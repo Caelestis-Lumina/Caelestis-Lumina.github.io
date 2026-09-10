@@ -1,7 +1,7 @@
 import { Dialog } from "./dialog.ts";
 import { element } from "./dom.ts";
 import type { Article } from "./catalog.ts";
-import { tween } from "./transition.ts";
+import { animateElement } from "./transition.ts";
 import { ReaderOutline } from "./reader-outline.ts";
 
 type ReadablePage = Pick<Article, "url" | "title">;
@@ -15,6 +15,7 @@ export class ArticleReader extends Dialog {
   private timeout?: ReturnType<typeof setTimeout>;
   private connectedDocuments = new WeakSet<Document>();
   private outline: ReaderOutline;
+  private morphVersion = 0;
   article?: ReadablePage;
   requestClose?: () => void;
 
@@ -62,6 +63,7 @@ export class ArticleReader extends Dialog {
     this.status.hidden = false;
     this.status.textContent = "正在载入正文…";
     this.frame.style.visibility = "hidden";
+    this.frame.dataset.ready = 'false';
     const url = new URL(article.url, location.href);
     url.searchParams.set("knowledge-reader", "1");
     this.frame.src = url.href;
@@ -80,19 +82,16 @@ export class ArticleReader extends Dialog {
     super.close(notify);
   }
   async morph(origin: {left: number; top: number; width: number; height: number}, opening: boolean, reduced: boolean, signal: AbortSignal) {
+    const version = ++this.morphVersion;
     const bounds = this.root.getBoundingClientRect();
-    const clamp = (value: number, size: number) => Math.max(0, Math.min(size, value));
-    const insets = [clamp(origin.top - bounds.top, bounds.height), clamp(bounds.right - origin.left - origin.width, bounds.width),
-      clamp(bounds.bottom - origin.top - origin.height, bounds.height), clamp(origin.left - bounds.left, bounds.width)];
+    const dx = origin.left + origin.width / 2 - bounds.left - bounds.width / 2;
+    const dy = origin.top + origin.height / 2 - bounds.top - bounds.height / 2;
+    const paper = {transform: `translate(${dx}px, ${dy}px) scale(${Math.max(.01, origin.width / bounds.width)}, ${Math.max(.01, origin.height / bounds.height)})`, opacity: 0};
+    const page = {transform: 'none', opacity: 1};
     this.root.dataset.morphing = "true";
-    const done = await tween(reduced ? 0 : opening ? 450 : 260, signal, progress => {
-      const amount = opening ? 1 - progress : progress;
-      this.root.style.clipPath = `inset(${insets.map(value => `${value * amount}px`).join(" ")})`;
-      this.root.style.opacity = String(1 - amount * .7);
-    });
-    this.root.style.clipPath = "";
-    this.root.style.opacity = "";
-    delete this.root.dataset.morphing;
+    this.root.inert = true;
+    const done = await animateElement(this.root, opening ? [paper, page] : [page, paper], reduced ? 0 : opening ? 360 : 240, signal);
+    if (version === this.morphVersion) { delete this.root.dataset.morphing; this.root.inert = false; }
     return done;
   }
 
@@ -110,6 +109,7 @@ export class ArticleReader extends Dialog {
     clearTimeout(this.timeout);
     this.status.hidden = true;
     this.frame.style.visibility = "visible";
+    this.frame.dataset.ready = 'true';
     this.outline.connect(doc);
     if (this.connectedDocuments.has(doc)) return;
     this.connectedDocuments.add(doc);

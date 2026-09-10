@@ -7,7 +7,8 @@
 .reader-tools button { white-space: nowrap; }
 .reader-tools button[aria-pressed="true"] { color: #896333; }
 .reader-body { display: flex; flex: 1; min-height: 0; background: #f5f2ec; }
-.reader-body iframe { flex: 1; min-width: 0; }
+.reader-body iframe { flex: 1; min-width: 0; opacity: 0; transition: opacity .35s; }
+.reader-body iframe[data-ready="true"] { opacity: 1; }
 #reader-outline { display: flex; flex-direction: column; flex: 0 0 clamp(210px, 20vw, 290px); min-height: 0; border-right: 1px solid #cfc7b850; padding: 26px 16px 24px 24px; }
 #reader-outline[hidden] { display: none; }
 #reader-outline h3 { font-size: 13px; letter-spacing: .12em; color: #897454; margin: 0 0 22px; }

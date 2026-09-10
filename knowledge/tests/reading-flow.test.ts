@@ -13,6 +13,7 @@ function setup() {
   const preparation = new Promise<void>(resolve => release = resolve);
   const scene = {detailVisibility: 1, currentReadingSpread: 0, prepareReadingAssembly: () => preparation,
     setReadingSpread(value: number) { this.currentReadingSpread = value; },
+    resetReadingAssembly() { this.currentReadingSpread = 0; },
     clearReadingAssembly() { this.currentReadingSpread = 0; }, readingBounds: () => ({left: 0, top: 0, width: 100, height: 100})};
   const app = {root: node(), prefs: {reduced: true}, renderingScene: scene};
   const reader = {root: node(), isOpen: false, shows: 0, closes: 0, prepare() {}, show() { this.isOpen = true; this.shows++; },
@@ -55,4 +56,28 @@ test("route reset cancels old model requests without writing a close history ent
   assert.equal(reader.shows, 0);
   assert.equal(reader.closes, 0);
   assert.equal(flow.active, false);
+});
+
+test('Escape midway through a shot reverses it without opening the reader late', async () => {
+  const frames = new Map<number, FrameRequestCallback>();
+  let id = 0;
+  Object.assign(globalThis, {requestAnimationFrame: (callback: FrameRequestCallback) => {frames.set(++id, callback); return id;},
+    cancelAnimationFrame: (key: number) => frames.delete(key)});
+  const {flow, reader, scene, release, app} = setup();
+  app.prefs.reduced = false;
+  release();
+  const opening = flow.open(article);
+  await Promise.resolve();
+  const first = [...frames.entries()][0];
+  frames.delete(first[0]);
+  first[1](performance.now() + 900);
+  assert.ok(scene.currentReadingSpread > .4 && scene.currentReadingSpread < .7);
+  assert.equal(reader.shows, 0);
+  const closing = flow.close(true);
+  await Promise.resolve();
+  for (const [key, callback] of [...frames.entries()]) {frames.delete(key); callback(performance.now() + 2000);}
+  await Promise.all([opening, closing]);
+  assert.equal(reader.shows, 0);
+  assert.equal(scene.currentReadingSpread, 0);
+  assert.equal(app.root.inert, false);
 });

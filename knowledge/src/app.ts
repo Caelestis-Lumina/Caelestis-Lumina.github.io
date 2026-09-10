@@ -213,7 +213,7 @@ export class KnowledgeApp {
   private frame(ms: number) {
     const cinema = this.mode === "boot" ? this.boot.update(ms / 1000) : undefined;
     if (!this.suspendScene()) this.scene.update(ms / 1000, cinema);
-    if (this.mode === "detail") {
+    if (this.mode === "detail" && !this.overlayOpen()) {
       const content = element("#detail-content");
       content.style.opacity = String(this.scene.detailVisibility);
       content.style.transform = `translateY(${(1 - this.scene.detailVisibility) * 18}px)`;
