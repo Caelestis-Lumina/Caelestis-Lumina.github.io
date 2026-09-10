@@ -9,7 +9,7 @@ const segment = (t: number, start: number, end: number) => {
 /** One reversible timeline. Segment overlap keeps each movement flowing into the next. */
 export function readingPose(t: number) {
   return {lift: segment(t, 0, .24), center: segment(t, .1, .43),
-    open: segment(t, .36, .61), paper: segment(t, .53, .8), approach: segment(t, .65, 1)};
+    open: segment(t, .36, .61), paper: segment(t, .53, .75), approach: segment(t, .75, 1)};
 }
 
 export class ReadingShot {
@@ -83,16 +83,20 @@ export class ReadingShot {
     this.mouth.material.opacity = .22 * p.open * (1 - p.approach);
     this.model.updateMatrixWorld(true);
     // A real sheet slides out of the top of the opened cassette before approaching the lens.
-    this.point.set(0, 1.875 + p.paper * 3.05, .32 + p.approach * .8).applyMatrix4(this.model.matrixWorld);
+    const widthFraction = Math.min(1760 / viewport.width, .96);
+    const pageRatio = viewport.width * widthFraction / (viewport.height * .96);
+    const sourceHeight = Math.min(3.05, 4.3 / pageRatio);
+    this.point.set(0, 3.4 - sourceHeight / 2 + p.paper * sourceHeight, .32).applyMatrix4(this.model.matrixWorld);
     const near = this.depth * .3;
     this.landing.copy(this.cameraPosition).addScaledVector(this.forward, near);
     this.paper.position.copy(this.point).lerp(this.landing, p.approach);
     this.paper.quaternion.copy(this.model.quaternion).slerp(this.cameraOrientation, p.approach);
     const height = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * near;
-    const widthFraction = Math.min(1760 / viewport.width, .96);
-    this.paper.scale.set(THREE.MathUtils.lerp(4.3, height * camera.aspect * widthFraction, p.approach),
-      THREE.MathUtils.lerp(3.05, height * .96, p.approach), 1);
-    this.paper.setExtraction(p.paper, p.approach);
+    const sheetHeight = THREE.MathUtils.lerp(sourceHeight, height * .96, p.approach);
+    this.paper.scale.set(sheetHeight * pageRatio, sheetHeight, 1);
+    this.point.set(0, 3.4, .32).applyMatrix4(this.model.matrixWorld);
+    this.paper.opening.setFromNormalAndCoplanarPoint(this.up, this.point);
+    if (p.paper >= 1) this.paper.opening.constant = 10000;
     this.paper.visible = p.paper > 0;
     this.paper.updateMatrixWorld(true);
     this.dirty = false;

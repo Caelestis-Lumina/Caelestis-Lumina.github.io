@@ -8,18 +8,16 @@ import {PaperSurface} from '../src/rhine/paper-surface.ts';
 test('blank page stays flat and untextured throughout extraction and return', () => {
   const paper = new PaperSurface();
   const vertices = paper.geometry.attributes.position;
-  paper.setExtraction(0, 0);
-  for (let i = 0; i < vertices.count; i++) assert.equal(vertices.getY(i), .5);
+  const original = Array.from(vertices.array);
   for (const progress of [.2, .5, .8, 1, .8, .5, .2]) {
-    paper.setExtraction(progress, progress);
+    paper.opening.constant = progress;
     for (let i = 0; i < vertices.count; i++) {
       assert.equal(vertices.getZ(i), 0);
       assert.ok(Math.abs(vertices.getX(i)) === .5, 'page edges must remain straight');
-      assert.ok(vertices.getY(i) >= .5 - progress - 1e-7, 'tail cannot show below the slot');
     }
     assert.equal(paper.material.map, null, 'no article thumbnail during flight');
+    assert.deepEqual(Array.from(vertices.array), original, 'extraction must not stretch any vertices');
   }
-  paper.setExtraction(1, 1);
   assert.equal(vertices.getY(vertices.count - 1), -.5);
   paper.dispose();
 });
@@ -48,6 +46,7 @@ test('paper lands at the reader bounds and reversing restores the exact model po
   shot.begin(source, camera);
   for (const t of [.61,.65,.7,.75,.8,.85,.9,.95]) {
     shot.set(t); shot.update(camera,{width:1280,height:720});
+    assert.ok(Math.abs(shot.paper.scale.x / shot.paper.scale.y - 16/9) < 1e-8, 'page must keep its aspect ratio during flight');
     const sheet = shot.bounds(camera,{left:0,top:0,width:1280,height:720});
     assert.ok(sheet.top >= 0, `sheet clipped above viewport at ${t}`);
     assert.ok(sheet.top + sheet.height <= 720, `sheet clipped below viewport at ${t}`);

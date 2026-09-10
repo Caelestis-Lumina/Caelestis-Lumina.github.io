@@ -5,7 +5,7 @@ import { animateElement } from "./transition.ts";
 import { ReaderOutline } from "./reader-outline.ts";
 import { ReaderReveal } from "./reader-reveal.ts";
 
-type ReadablePage = Pick<Article, "url" | "title"> & Partial<Pick<Article, "summary">>;
+type ReadablePage = Pick<Article, "url" | "title">;
 
 /** Embed the real Hugo page so MathJax, code tools, anchors and comments stay intact. */
 export class ArticleReader extends Dialog {
@@ -18,6 +18,7 @@ export class ArticleReader extends Dialog {
   private outline: ReaderOutline;
   private morphVersion = 0;
   private reveal: ReaderReveal;
+  private pendingReveal = false;
   article?: ReadablePage;
   requestClose?: () => void;
 
@@ -25,11 +26,11 @@ export class ArticleReader extends Dialog {
     super("article-reader", "文章阅读器");
     this.root.innerHTML = `<header class="dialog-header"><div><span>READING ROOM</span><h2 id="reader-title"></h2></div>
       <div class="reader-tools"><button id="reader-outline-toggle" aria-expanded="true" aria-controls="reader-outline">目录</button><button id="reader-expand" aria-pressed="false" title="铺满浏览器窗口">全屏阅读</button><a id="reader-original" data-view-mode="classic">切换经典视图</a><button id="reader-share">复制场景链接</button><button data-close aria-label="关闭阅读，返回档案">返回档案 <kbd>ESC</kbd></button></div></header>
-      <div class="reader-status" role="status"></div><div class="reader-body"><aside id="reader-outline"><h3>文章目录</h3><nav aria-label="文章目录"></nav></aside><div class="reader-page"><iframe id="article-frame" title="文章正文" referrerpolicy="same-origin"></iframe><div class="reader-reveal" aria-hidden="true" hidden></div></div></div>`;
+      <div class="reader-status" role="status"></div><div class="reader-body"><aside id="reader-outline"><h3>文章目录</h3><nav aria-label="文章目录"></nav></aside><div class="reader-page"><iframe id="article-frame" title="文章正文" referrerpolicy="same-origin"></iframe></div></div>`;
     this.frame = element("#article-frame", this.root);
     this.status = element(".reader-status", this.root);
     this.outline = new ReaderOutline(element('#reader-outline nav', this.root));
-    this.reveal = new ReaderReveal(element('.reader-reveal', this.root));
+    this.reveal = new ReaderReveal();
     element('#reader-expand', this.root).addEventListener('click', () => {
       const expanded = this.root.dataset.expanded !== 'true';
       this.root.dataset.expanded = String(expanded);
@@ -42,7 +43,7 @@ export class ArticleReader extends Dialog {
       outline.hidden = !outline.hidden;
       element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!outline.hidden));
     });
-    this.frame.addEventListener("load", () => this.loaded(true));
+    this.frame.addEventListener("load", () => this.loaded());
     window.addEventListener("message", event => {
       if (event.origin === location.origin && event.source === this.frame.contentWindow &&
         event.data?.type === "cl-knowledge-reader-ready") this.loaded();
@@ -55,13 +56,14 @@ export class ArticleReader extends Dialog {
   }
 
   prepare(article: ReadablePage, anchor = "") {
+    this.reveal.finish();
+    this.pendingReveal = true;
     this.article = article;
     this.pendingAnchor = anchor;
     element("#reader-title", this.root).textContent = article.title;
     element<HTMLAnchorElement>("#reader-original", this.root).href = article.url;
     element("#reader-share", this.root).textContent = "复制场景链接";
     if (this.loadedURL === article.url) { this.scrollToAnchor(); return; }
-    this.reveal.start(article.title, article.summary || '', document.documentElement.dataset.reduced === 'true' || matchMedia('(prefers-reduced-motion: reduce)').matches);
     this.loadedURL = article.url;
     this.outline.clear();
     this.status.hidden = false;
@@ -87,8 +89,10 @@ export class ArticleReader extends Dialog {
     this.prepare(article, anchor);
     delete this.root.dataset.surface;
     super.open();
+    if (this.frame.dataset.ready === 'true') this.revealArticle();
   }
   override close(notify = true) {
+    this.pendingReveal = false;
     this.reveal.finish();
     if (notify && this.requestClose) { this.requestClose(); return; }
     super.close(notify);
@@ -107,7 +111,14 @@ export class ArticleReader extends Dialog {
     return done;
   }
 
-  private loaded(complete = false) {
+  private revealArticle() {
+    const doc = this.frame.contentDocument;
+    if (!this.pendingReveal || !this.isOpen || this.root.dataset.surface === 'blank' || !doc) return;
+    this.pendingReveal = false;
+    this.reveal.start(doc, document.documentElement.dataset.reduced === 'true' || matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  private loaded() {
     const doc = this.frame.contentDocument;
     // The initial about:blank load and superseded requests are not article failures.
     if (!doc || doc.URL === "about:blank" || !this.loadedURL ||
@@ -119,14 +130,13 @@ export class ArticleReader extends Dialog {
       clearTimeout(this.timeout);
       return;
     }
-    // Footer handshake means usable HTML; the iframe load event means loading has completed.
-    // Cached documents may already be complete when their queued handshake arrives.
-    if (complete || doc.readyState === 'complete') this.reveal.finish();
     clearTimeout(this.timeout);
     this.status.hidden = true;
     this.frame.style.visibility = "visible";
     this.frame.dataset.ready = 'true';
     this.outline.connect(doc);
+    this.scrollToAnchor();
+    this.revealArticle();
     if (this.connectedDocuments.has(doc)) return;
     this.connectedDocuments.add(doc);
     doc.addEventListener("keydown", event => {
@@ -147,7 +157,6 @@ export class ArticleReader extends Dialog {
         this.follow(url);
       } else { link.target = "_blank"; link.rel = "noopener"; }
     });
-    this.scrollToAnchor();
   }
 
   private scrollToAnchor() {

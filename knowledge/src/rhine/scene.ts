@@ -131,6 +131,7 @@ export class ArchiveScene {
         Math.min(innerWidth / 1920, innerHeight / 1080),
     );
     this.renderer.setSize(container.clientWidth, container.clientHeight);
+    this.renderer.localClippingEnabled = true;
     this.renderer.info.autoReset = false;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
