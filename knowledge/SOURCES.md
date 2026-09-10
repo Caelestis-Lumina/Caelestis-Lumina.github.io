@@ -33,6 +33,6 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 - Boot text and canvas labels identify Caelestis Lumina; calibrated spatial motion and baseline lighting are retained.
 - App orchestration, catalog/navigation, preferences, search and reading are maintained outside the upstream-derived modules.
 - Homepage selection uses panel-free leader lines and typography, with centered transparent column controls. `scrub-title.ts` replaces the demo's flashing black strip with an interruptible, readable title reveal.
-- `reading-shot.ts` is blog-authored choreography over the upstream assembly groups. Its paper and outline are procedural Three.js geometry; no new external models or textures are included. The standalone model viewer has been removed.
+- `reading-shot.ts` is blog-authored choreography over the upstream assembly groups. `paper-surface.ts` provides a segmented, deformable sheet with slot occlusion and article metadata drawn to a local canvas texture. `reader-reveal.ts` provides a bounded scan and text-decoding overlay without changing the article DOM. No new external models or textures are included. The standalone model viewer has been removed.
 
 Upstream's MIT grant applies to its own code, not automatically to third-party marks or non-code assets. Model assets are reused under the permission reported by the blog owner, not relabeled as MIT. Original Arknights-related rights remain with their respective owners. No reference video or upstream demo essays are distributed.

@@ -4,6 +4,7 @@ import "./styles.css";
 import "./workspace.css";
 import "./reading-flow.css";
 import "./reader-layout.css";
+import "./reader-reveal.css";
 import { parseCatalog } from "./catalog.ts";
 import { KnowledgeApp } from "./app.ts";
 import { element, siteURL } from "./dom.ts";
