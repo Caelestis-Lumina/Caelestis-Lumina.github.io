@@ -2,6 +2,7 @@ import { Dialog } from "./dialog.ts";
 import { element } from "./dom.ts";
 import type { Article } from "./catalog.ts";
 import { tween } from "./transition.ts";
+import { ReaderOutline } from "./reader-outline.ts";
 
 type ReadablePage = Pick<Article, "url" | "title">;
 
@@ -13,16 +14,30 @@ export class ArticleReader extends Dialog {
   private pendingAnchor = "";
   private timeout?: ReturnType<typeof setTimeout>;
   private connectedDocuments = new WeakSet<Document>();
+  private outline: ReaderOutline;
   article?: ReadablePage;
   requestClose?: () => void;
 
   constructor(private follow: (url: URL) => void) {
     super("article-reader", "文章阅读器");
     this.root.innerHTML = `<header class="dialog-header"><div><span>READING ROOM</span><h2 id="reader-title"></h2></div>
-      <div class="reader-tools"><a id="reader-original" data-view-mode="classic">切换经典视图</a><button id="reader-share">复制场景链接</button><button data-close aria-label="关闭阅读，返回档案">返回档案 <kbd>ESC</kbd></button></div></header>
-      <div class="reader-status" role="status"></div><iframe id="article-frame" title="文章正文" referrerpolicy="same-origin"></iframe>`;
+      <div class="reader-tools"><button id="reader-outline-toggle" aria-expanded="true" aria-controls="reader-outline">目录</button><button id="reader-expand" aria-pressed="false" title="铺满浏览器窗口">全屏阅读</button><a id="reader-original" data-view-mode="classic">切换经典视图</a><button id="reader-share">复制场景链接</button><button data-close aria-label="关闭阅读，返回档案">返回档案 <kbd>ESC</kbd></button></div></header>
+      <div class="reader-status" role="status"></div><div class="reader-body"><aside id="reader-outline"><h3>文章目录</h3><nav aria-label="文章目录"></nav></aside><iframe id="article-frame" title="文章正文" referrerpolicy="same-origin"></iframe></div>`;
     this.frame = element("#article-frame", this.root);
     this.status = element(".reader-status", this.root);
+    this.outline = new ReaderOutline(element('#reader-outline nav', this.root));
+    element('#reader-expand', this.root).addEventListener('click', () => {
+      const expanded = this.root.dataset.expanded !== 'true';
+      this.root.dataset.expanded = String(expanded);
+      const button = element('#reader-expand', this.root);
+      button.setAttribute('aria-pressed', String(expanded));
+      button.textContent = expanded ? '退出全屏' : '全屏阅读';
+    });
+    element('#reader-outline-toggle', this.root).addEventListener('click', () => {
+      const outline = element('#reader-outline', this.root);
+      outline.hidden = !outline.hidden;
+      element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!outline.hidden));
+    });
     this.frame.addEventListener("load", () => this.loaded());
     window.addEventListener("message", event => {
       if (event.origin === location.origin && event.source === this.frame.contentWindow &&
@@ -43,6 +58,7 @@ export class ArticleReader extends Dialog {
     element("#reader-share", this.root).textContent = "复制场景链接";
     if (this.loadedURL === article.url) { this.scrollToAnchor(); return; }
     this.loadedURL = article.url;
+    this.outline.clear();
     this.status.hidden = false;
     this.status.textContent = "正在载入正文…";
     this.frame.style.visibility = "hidden";
@@ -94,6 +110,7 @@ export class ArticleReader extends Dialog {
     clearTimeout(this.timeout);
     this.status.hidden = true;
     this.frame.style.visibility = "visible";
+    this.outline.connect(doc);
     if (this.connectedDocuments.has(doc)) return;
     this.connectedDocuments.add(doc);
     doc.addEventListener("keydown", event => {

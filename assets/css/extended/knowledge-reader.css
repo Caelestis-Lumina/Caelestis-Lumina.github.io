@@ -10,6 +10,8 @@ html.knowledge-reader { color-scheme: light; background: #f5f2ec; }
 .knowledge-reader .main { margin: 0 auto; max-width: 980px; padding: 0; }
 .knowledge-reader .post-single { border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; padding: 12px 0; }
 .knowledge-reader .post-content { font-size: 18px; line-height: 1.9; }
+.knowledge-reader .post-content :is(h2, h3, h4) { scroll-margin-top: 24px; }
+.knowledge-reader .post-content :is(h2, h3, h4):focus { outline: none; text-decoration: underline; text-decoration-color: #a47d49; text-underline-offset: 6px; text-decoration-thickness: 1px; }
 .knowledge-reader .post-content pre { max-width: 100%; overflow: auto; }
 .knowledge-reader .post-content table { display: block; max-width: 100%; overflow: auto; }
 .knowledge-reader .post-title { font-size: clamp(25px, 3vw, 38px); }
