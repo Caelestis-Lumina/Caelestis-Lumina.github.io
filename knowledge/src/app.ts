@@ -36,7 +36,10 @@ export class KnowledgeApp {
     this.stage.innerHTML = shell.replaceAll("__LOGO__", logo);
     this.stage.querySelectorAll<HTMLAnchorElement>("[data-site-link]").forEach(link => link.href = siteURL(link.dataset.siteLink!));
     this.boot = new BootController(this.stage, () => this.enterArchive());
-    this.view = new SelectionView(this.catalog);
+    this.view = new SelectionView(this.catalog, direction => {
+      if (!this.ready || this.mode !== "archive" || this.overlayOpen()) return;
+      this.select(this.catalog.stepLane(direction), {axis: "lane", direction});
+    });
     this.view.update(false);
     this.stage.dataset.mode = "boot";
     this.stage.dataset.boot = "access";
@@ -53,14 +56,9 @@ export class KnowledgeApp {
     window.addEventListener("pageshow", () => { if (this.ready) this.schedule(); });
     this.prefs.systemMotion.addEventListener("change", () => this.applyPreferences());
     this.stage.addEventListener("click", event => {
-      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action], [data-select], [data-column]");
+      const target = (event.target as HTMLElement).closest<HTMLElement>("[data-action], [data-select]");
       if (!target || !this.ready) return;
-      if (target.dataset.column !== undefined) {
-        const current = this.catalog.location(this.catalog.selected).lane;
-        const offset = Number(target.dataset.column) - current;
-        if (offset) this.select(this.catalog.stepLane(offset));
-      }
-      else if (target.dataset.select !== undefined) this.select(Number(target.dataset.select));
+      if (target.dataset.select !== undefined) this.select(Number(target.dataset.select));
       else this.action(target.dataset.action!);
     });
     element<HTMLSelectElement>("#subcolumn").addEventListener("change", event => {
