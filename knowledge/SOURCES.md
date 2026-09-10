@@ -27,7 +27,7 @@ The blog owner states that the upstream author has agreed to this reuse. Upstrea
 
 ## Intentional adaptations
 
-- Blog-authored `brand.ts` replaces the interface/printed mark with the existing C/L blog identity.
+- Blog-authored `brand.ts` derives the interface/printed mark from `static/favicon.svg`, keeping the C/L geometry, stroke weight and alignment shared with the browser icon. Boot animation draws those same strokes without rotating ornaments around an offset pivot.
 - `data.ts` bridges the independent blog catalog into the scene. Fixed demo essays are not imported.
 - The scene tracks selected article identity separately from render-pool slots; asset paths respect the site's base path, and lane rebasing uses the actual column count. Row rebasing is disabled because unequal lane lengths have no small common period.
 - Boot text and canvas labels identify Caelestis Lumina; calibrated spatial motion and baseline lighting are retained.
