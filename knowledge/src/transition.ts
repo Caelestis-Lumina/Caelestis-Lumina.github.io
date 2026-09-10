@@ -23,16 +23,3 @@ export function tween(duration: number, signal: AbortSignal, paint: (progress: n
     frame = requestAnimationFrame(tick);
   });
 }
-
-/** Transform/opacity animations run on the compositor, with the same cancellation contract. */
-export async function animateElement(element: HTMLElement, keyframes: Keyframe[], duration: number, signal: AbortSignal) {
-  if (signal.aborted) return false;
-  if (!duration) return true;
-  const animation = element.animate(keyframes, {duration, easing: 'cubic-bezier(.22, 1, .36, 1)', fill: 'both'});
-  const abort = () => animation.cancel();
-  signal.addEventListener('abort', abort, {once: true});
-  const completed = await animation.finished.then(() => true, () => false);
-  signal.removeEventListener('abort', abort);
-  animation.cancel();
-  return completed && !signal.aborted;
-}

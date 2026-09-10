@@ -2,6 +2,7 @@ import type {KnowledgeApp} from "./app.ts";
 import type {Article} from "./catalog.ts";
 import type {ArticleReader} from "./reader.ts";
 import {tween} from "./transition.ts";
+import {READING_MOTION, readingHandoff} from './reading-motion.ts';
 
 /** Owns the reversible handoff from the physical cassette to the reading surface. */
 export class ReadingFlow {
@@ -50,14 +51,19 @@ export class ReadingFlow {
       if (!await tween(50, signal, () => {})) return;
     }
     const from = this.app.renderingScene.currentReadingSpread;
-    if (!await tween(this.app.prefs.reduced || continuing ? 0 : 1800 * (1 - from), signal,
-      progress => this.app.renderingScene.setReadingSpread(from + (1 - from) * progress), t => t)) return;
-    // Keep the surface blank through the handoff; load/decode text only after it opens.
-    if (!continuing) {
-      this.reader.openSurface();
-      if (!await this.reader.morph(this.app.renderingScene.readingBounds(), true, this.app.prefs.reduced, signal)) return;
-    }
+    let handoffStarted = false;
+    if (!await tween(this.app.prefs.reduced || continuing ? 0 : READING_MOTION.open * (1 - from), signal, progress => {
+      const position = from + (1 - from) * progress;
+      this.app.renderingScene.setReadingSpread(position);
+      if (!continuing && position >= READING_MOTION.handoff) {
+        if (!handoffStarted) {
+          this.reader.openSurface(); this.reader.beginHandoff(); handoffStarted = true;
+        }
+        this.reader.followSurface(this.app.renderingScene.readingBounds(), readingHandoff(position));
+      }
+    }, t => t)) return;
     if (!signal.aborted) {
+      this.reader.endHandoff();
       this.reader.show(article, anchor);
       this.setPhase("reading");
       this.reader.root.querySelector<HTMLIFrameElement>("iframe")?.focus();
@@ -66,11 +72,17 @@ export class ReadingFlow {
   async close(notify = false) {
     if (this.phase === "closing") return;
     const signal = this.begin("closing");
-    if (this.reader.isOpen && !await this.reader.morph(this.app.renderingScene.readingBounds(), false, this.app.prefs.reduced, signal)) return;
-    this.reader.close(false);
+    if (this.reader.isOpen) this.reader.beginHandoff();
     const from = this.app.renderingScene.currentReadingSpread;
-    if (!await tween(this.app.prefs.reduced ? 0 : 1200 * from, signal,
-      progress => this.app.renderingScene.setReadingSpread(from * (1 - progress)), t => t)) return;
+    if (!await tween(this.app.prefs.reduced ? 0 : READING_MOTION.close * from, signal, progress => {
+      const position = from * (1 - progress);
+      this.app.renderingScene.setReadingSpread(position);
+      if (this.reader.isOpen) {
+        this.reader.followSurface(this.app.renderingScene.readingBounds(), readingHandoff(position));
+        if (position <= READING_MOTION.handoff) this.reader.close(false);
+      }
+    }, t => t)) return;
+    this.reader.close(false);
     this.app.renderingScene.resetReadingAssembly();
     this.setPhase("idle");
     this.app.root.querySelector<HTMLButtonElement>('[data-action="read"]')?.focus({preventScroll: true});

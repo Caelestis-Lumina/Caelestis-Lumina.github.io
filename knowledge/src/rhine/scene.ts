@@ -1211,9 +1211,12 @@ export class ArchiveScene {
   readingBounds() {
     const r = this.renderer.domElement.getBoundingClientRect();
     if (this.reading?.shot.active) {
-      const dirty = this.reading.shot.dirty;
-      this.reading.shot.update(this.camera, r);
-      this.reading.shot.dirty = dirty;
+      if (this.reading.shot.dirty) {
+        // Commit the GPU pose before its DOM follower so the two never trail by one frame.
+        this.reading.shot.update(this.camera, r);
+        this.renderer.info.reset();
+        this.composer.render();
+      }
       return this.reading.shot.bounds(this.camera, r);
     }
     const points = [[-2.5,0],[2.5,3.7]].map(([x,y]) => this.model.localToWorld(new THREE.Vector3(x,y,.255)).project(this.camera));

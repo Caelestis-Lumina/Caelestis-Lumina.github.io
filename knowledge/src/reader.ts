@@ -1,7 +1,6 @@
 import { Dialog } from "./dialog.ts";
 import { element } from "./dom.ts";
 import type { Article } from "./catalog.ts";
-import { animateElement } from "./transition.ts";
 import { ReaderOutline } from "./reader-outline.ts";
 import { ReaderReveal } from "./reader-reveal.ts";
 
@@ -16,7 +15,7 @@ export class ArticleReader extends Dialog {
   private timeout?: ReturnType<typeof setTimeout>;
   private connectedDocuments = new WeakSet<Document>();
   private outline: ReaderOutline;
-  private morphVersion = 0;
+  private surfaceBounds?: DOMRect;
   private reveal: ReaderReveal;
   private pendingReveal = false;
   article?: ReadablePage;
@@ -95,20 +94,30 @@ export class ArticleReader extends Dialog {
     this.pendingReveal = false;
     this.reveal.finish();
     if (notify && this.requestClose) { this.requestClose(); return; }
+    this.endHandoff();
     super.close(notify);
   }
-  async morph(origin: {left: number; top: number; width: number; height: number}, opening: boolean, reduced: boolean, signal: AbortSignal) {
-    const version = ++this.morphVersion;
-    const bounds = this.root.getBoundingClientRect();
-    const dx = origin.left + origin.width / 2 - bounds.left - bounds.width / 2;
-    const dy = origin.top + origin.height / 2 - bounds.top - bounds.height / 2;
-    const paper = {transform: `translate(${dx}px, ${dy}px) scale(${Math.max(.01, origin.width / bounds.width)}, ${Math.max(.01, origin.height / bounds.height)})`, opacity: 0};
-    const page = {transform: 'none', opacity: 1};
+  beginHandoff() {
+    this.reveal.finish();
+    this.surfaceBounds = this.root.getBoundingClientRect();
     this.root.dataset.morphing = "true";
     this.root.inert = true;
-    const done = await animateElement(this.root, opening ? [paper, page] : [page, paper], reduced ? 0 : opening ? 360 : 240, signal);
-    if (version === this.morphVersion) { delete this.root.dataset.morphing; this.root.inert = false; }
-    return done;
+  }
+  followSurface(origin: {left: number; top: number; width: number; height: number}, visibility: number) {
+    const bounds = this.surfaceBounds;
+    if (!bounds) return;
+    const remaining = 1 - visibility;
+    const dx = (origin.left + origin.width / 2 - bounds.left - bounds.width / 2) * remaining;
+    const dy = (origin.top + origin.height / 2 - bounds.top - bounds.height / 2) * remaining;
+    const sx = 1 + (origin.width / bounds.width - 1) * remaining;
+    const sy = 1 + (origin.height / bounds.height - 1) * remaining;
+    this.root.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    this.root.style.opacity = String(visibility);
+  }
+  endHandoff() {
+    this.surfaceBounds = undefined;
+    this.root.style.transform = ''; this.root.style.opacity = '';
+    delete this.root.dataset.morphing; this.root.inert = false;
   }
 
   private revealArticle() {

@@ -1,16 +1,7 @@
 import * as THREE from 'three';
 import {PaperSurface} from './paper-surface.ts';
-
-const segment = (t: number, start: number, end: number) => {
-  const x = THREE.MathUtils.clamp((t - start) / (end - start), 0, 1);
-  return x * x * x * (10 + x * (-15 + 6 * x));
-};
-
-/** One reversible timeline. Segment overlap keeps each movement flowing into the next. */
-export function readingPose(t: number) {
-  return {lift: segment(t, 0, .24), center: segment(t, .1, .43),
-    open: segment(t, .36, .61), paper: segment(t, .53, .75), approach: segment(t, .75, 1)};
-}
+import {readingPose} from '../reading-motion.ts';
+import {smooth} from './motion.ts';
 
 export class ReadingShot {
   readonly paper = new PaperSurface();
@@ -23,6 +14,9 @@ export class ReadingShot {
   private cameraPosition = new THREE.Vector3();
   private point = new THREE.Vector3();
   private landing = new THREE.Vector3();
+  private pivot = new THREE.Vector3();
+  private orbit = new THREE.Quaternion();
+  private orbitAxis = new THREE.Vector3(0, 1, 0);
   private depth = 1;
   private fieldOfView = 6;
   active = false;
@@ -56,6 +50,7 @@ export class ReadingShot {
     this.forward.set(0, 0, -1).applyQuaternion(camera.quaternion);
     this.point.set(0, 1.85, 0).applyMatrix4(source.matrixWorld).sub(camera.position);
     this.depth = Math.max(10, this.point.dot(this.forward));
+    this.pivot.copy(camera.position).addScaledVector(this.forward, this.depth);
     this.center.copy(camera.position).addScaledVector(this.forward, this.depth - 2);
     this.active = true;
     this.dirty = true;
@@ -65,13 +60,21 @@ export class ReadingShot {
 
   update(camera: THREE.PerspectiveCamera, viewport: {width: number; height: number}) {
     const p = readingPose(this.progress);
-    // Give the rising sheet headroom before it travels toward the lens.
-    camera.fov = this.fieldOfView * (1 + .55 * p.center);
+    // One orbit moves the entire archive throughout the shot, including lid/page motion.
+    const travel = smooth(this.progress);
+    this.orbit.setFromAxisAngle(this.orbitAxis, -.055 * travel);
+    camera.position.copy(this.cameraPosition).sub(this.pivot).applyQuaternion(this.orbit).add(this.pivot);
+    camera.quaternion.copy(this.orbit).multiply(this.cameraOrientation);
+    camera.fov = this.fieldOfView * (1 + .55 * travel);
     camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+    this.up.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    this.forward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    this.center.copy(camera.position).addScaledVector(this.forward, this.depth - 2);
     this.point.copy(this.start).addScaledVector(this.up, .8 * p.lift);
     this.landing.copy(this.center).addScaledVector(this.up, -2.2);
     this.model.position.copy(this.point).lerp(this.landing, p.center);
-    this.model.quaternion.copy(this.orientation).slerp(this.cameraOrientation, p.center);
+    this.model.quaternion.copy(this.orientation).slerp(camera.quaternion, p.center);
     this.model.visible = true;
     for (const name of ['cover', 'fasteners']) {
       const group = this.groups.get(name)!;
@@ -88,14 +91,21 @@ export class ReadingShot {
     const sourceHeight = Math.min(3.05, 4.3 / pageRatio);
     this.point.set(0, 3.4 - sourceHeight / 2 + p.paper * sourceHeight, .32).applyMatrix4(this.model.matrixWorld);
     const near = this.depth * .3;
-    this.landing.copy(this.cameraPosition).addScaledVector(this.forward, near);
-    this.paper.position.copy(this.point).lerp(this.landing, p.approach);
-    this.paper.quaternion.copy(this.model.quaternion).slerp(this.cameraOrientation, p.approach);
+    this.point.sub(camera.position);
+    const sourceDepth = Math.max(near, this.point.dot(this.forward));
+    const distance = 1 / THREE.MathUtils.lerp(1 / sourceDepth, 1 / near, p.approach);
+    this.point.addScaledVector(this.forward, -sourceDepth);
+    this.landing.copy(camera.position).addScaledVector(this.forward, distance)
+      .addScaledVector(this.point, (1 - p.approach) * distance / sourceDepth);
+    this.paper.position.copy(this.landing);
+    this.paper.quaternion.copy(this.model.quaternion).slerp(camera.quaternion, p.approach);
     const height = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * near;
-    const sheetHeight = THREE.MathUtils.lerp(sourceHeight, height * .96, p.approach);
+    // Interpolate apparent size, so perspective cannot accelerate the last few frames.
+    const sheetHeight = THREE.MathUtils.lerp(sourceHeight / sourceDepth, height * .96 / near, p.approach) * distance;
     this.paper.scale.set(sheetHeight * pageRatio, sheetHeight, 1);
     this.point.set(0, 3.4, .32).applyMatrix4(this.model.matrixWorld);
-    this.paper.opening.setFromNormalAndCoplanarPoint(this.up, this.point);
+    this.paper.opening.normal.set(0, 1, 0).applyQuaternion(this.model.quaternion);
+    this.paper.opening.constant = -this.paper.opening.normal.dot(this.point);
     if (p.paper >= 1) this.paper.opening.constant = 10000;
     this.paper.visible = p.paper > 0;
     this.paper.updateMatrixWorld(true);
@@ -121,7 +131,10 @@ export class ReadingShot {
   }
 
   reset(camera: THREE.PerspectiveCamera) {
-    if (this.active) { camera.fov = this.fieldOfView; camera.updateProjectionMatrix(); }
+    if (this.active) {
+      camera.position.copy(this.cameraPosition); camera.quaternion.copy(this.cameraOrientation);
+      camera.fov = this.fieldOfView; camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+    }
     this.active = false;
     this.progress = 0;
     this.paper.visible = false;
