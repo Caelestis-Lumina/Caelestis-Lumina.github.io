@@ -12,16 +12,35 @@ function setup() {
   let release!: () => void;
   const preparation = new Promise<void>(resolve => release = resolve);
   const scene = {detailVisibility: 1, currentReadingSpread: 0, prepareReadingAssembly: () => preparation,
-    setReadingArticle() {},
     setReadingSpread(value: number) { this.currentReadingSpread = value; },
     resetReadingAssembly() { this.currentReadingSpread = 0; },
     clearReadingAssembly() { this.currentReadingSpread = 0; }, readingBounds: () => ({left: 0, top: 0, width: 100, height: 100})};
   const app = {root: node(), prefs: {reduced: true}, renderingScene: scene};
-  const reader = {root: node(), isOpen: false, shows: 0, closes: 0, prepare() {}, show() { this.isOpen = true; this.shows++; },
+  const reader = {root: node(), isOpen: false, shows: 0, closes: 0, prepare() {}, openSurface() { this.isOpen = true; }, show() { this.isOpen = true; this.shows++; },
     close() { this.isOpen = false; }, morph: async () => true, onClose() { this.closes++; }};
   return {app, reader, scene, release, flow: new ReadingFlow(app as unknown as KnowledgeApp, reader as unknown as ArticleReader)};
 }
 const article = {url: "/posts/a/", title: "A"} as Article;
+
+test('text loading starts after the blank surface opens, and cancellation cannot reveal text late', async () => {
+  for (const cancel of [false, true]) {
+    const {flow, reader, release} = setup();
+    let finishMorph!: (done: boolean) => void;
+    const morphing = new Promise<boolean>(resolve => finishMorph = resolve);
+    reader.morph = () => morphing;
+    release();
+    const opening = flow.open(article);
+    // The reduced 3D tween resolves in a microtask, then the surface waits on its morph.
+    await Promise.resolve(); await Promise.resolve();
+    assert.equal(reader.isOpen, true);
+    assert.equal(reader.shows, 0, 'no article loading or decoding during the blank handoff');
+    if (cancel) flow.reset();
+    finishMorph(true);
+    await opening;
+    assert.equal(reader.shows, cancel ? 0 : 1);
+    assert.equal(reader.isOpen, !cancel);
+  }
+});
 
 test("closing during model loading invalidates the pending open and prevents a late reader", async () => {
   const {flow, reader, scene, release, app} = setup();

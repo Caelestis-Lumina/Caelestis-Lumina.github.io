@@ -44,7 +44,6 @@ export class ReadingFlow {
     try { await this.app.renderingScene.prepareReadingAssembly(); }
     catch (error) { console.warn("Reading animation unavailable; continuing with article", error); }
     if (signal.aborted) return;
-    this.app.renderingScene.setReadingArticle(article);
     // Direct links can reach this flow before the extraction camera has settled.
     const started = performance.now();
     while (this.app.renderingScene.detailVisibility < .95 && performance.now() - started < 1800) {
@@ -53,10 +52,13 @@ export class ReadingFlow {
     const from = this.app.renderingScene.currentReadingSpread;
     if (!await tween(this.app.prefs.reduced || continuing ? 0 : 1800 * (1 - from), signal,
       progress => this.app.renderingScene.setReadingSpread(from + (1 - from) * progress), t => t)) return;
-    // Loading/laying out an article (including MathJax) must not compete with the 3D shot.
-    this.reader.show(article, anchor);
-    if (!continuing && !await this.reader.morph(this.app.renderingScene.readingBounds(), true, this.app.prefs.reduced, signal)) return;
+    // Keep the surface blank through the handoff; load/decode text only after it opens.
+    if (!continuing) {
+      this.reader.openSurface();
+      if (!await this.reader.morph(this.app.renderingScene.readingBounds(), true, this.app.prefs.reduced, signal)) return;
+    }
     if (!signal.aborted) {
+      this.reader.show(article, anchor);
       this.setPhase("reading");
       this.reader.root.querySelector<HTMLIFrameElement>("iframe")?.focus();
     }

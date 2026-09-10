@@ -5,16 +5,21 @@ import {readingPose, ReadingShot} from '../src/rhine/reading-shot.ts';
 import {groupAssembly} from '../src/rhine/assembly.ts';
 import {PaperSurface} from '../src/rhine/paper-surface.ts';
 
-test('sheet stays within its slot, bends while extracting and becomes exactly flat for reading', () => {
+test('blank page stays flat and untextured throughout extraction and return', () => {
   const paper = new PaperSurface();
   const vertices = paper.geometry.attributes.position;
-  paper.deform(0, 0);
+  paper.setExtraction(0, 0);
   for (let i = 0; i < vertices.count; i++) assert.equal(vertices.getY(i), .5);
-  paper.deform(.5, 0);
-  assert.ok(vertices.getZ(0) > .05, 'leading edge should bend toward the reader');
-  for (let i = 0; i < vertices.count; i++) assert.ok(vertices.getY(i) >= 0, 'tail cannot show below the slot');
-  paper.deform(1, 1);
-  for (let i = 0; i < vertices.count; i++) assert.equal(vertices.getZ(i), 0);
+  for (const progress of [.2, .5, .8, 1, .8, .5, .2]) {
+    paper.setExtraction(progress, progress);
+    for (let i = 0; i < vertices.count; i++) {
+      assert.equal(vertices.getZ(i), 0);
+      assert.ok(Math.abs(vertices.getX(i)) === .5, 'page edges must remain straight');
+      assert.ok(vertices.getY(i) >= .5 - progress - 1e-7, 'tail cannot show below the slot');
+    }
+    assert.equal(paper.material.map, null, 'no article thumbnail during flight');
+  }
+  paper.setExtraction(1, 1);
   assert.equal(vertices.getY(vertices.count - 1), -.5);
   paper.dispose();
 });

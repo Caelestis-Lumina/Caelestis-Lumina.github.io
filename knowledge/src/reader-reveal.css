@@ -1,4 +1,5 @@
 .reader-page { position: relative; display: flex; flex: 1; min-width: 0; overflow: hidden; }
+.article-reader[data-surface="blank"] > * { opacity: 0; pointer-events: none; }
 .reader-reveal { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
   padding: 55px 34px; color: #625641; background: linear-gradient(#f5f2ecf5, #f5f2ecd9 42%, #f5f2ec00 75%);
   animation: reader-signal .65s linear 1; }

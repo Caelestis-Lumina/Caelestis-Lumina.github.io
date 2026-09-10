@@ -77,8 +77,15 @@ export class ArticleReader extends Dialog {
     }, 15000);
   }
 
+  openSurface() {
+    this.reveal.finish();
+    this.root.dataset.surface = 'blank';
+    super.open();
+  }
+
   show(article: ReadablePage, anchor = "") {
     this.prepare(article, anchor);
+    delete this.root.dataset.surface;
     super.open();
   }
   override close(notify = true) {

@@ -92,7 +92,7 @@ export class ReadingShot {
     const widthFraction = Math.min(1760 / viewport.width, .96);
     this.paper.scale.set(THREE.MathUtils.lerp(4.3, height * camera.aspect * widthFraction, p.approach),
       THREE.MathUtils.lerp(3.05, height * .96, p.approach), 1);
-    this.paper.deform(p.paper, p.approach);
+    this.paper.setExtraction(p.paper, p.approach);
     this.paper.visible = p.paper > 0;
     this.paper.updateMatrixWorld(true);
     this.dirty = false;
