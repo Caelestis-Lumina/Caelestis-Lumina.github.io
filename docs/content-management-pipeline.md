@@ -163,7 +163,7 @@ columns = [
 | 一级目录 / Column | 当前下级方向 | 收录范围 |
 | --- | --- | --- |
 | `Foundations` | Mathematics and Geometry、Theoretical Mechanics | 数学、几何和力学基础 |
-| `Machine-Learning` / `Machine Learning` | 暂不细分 | 机器学习原理、模型训练、评估与实践 |
+| `Machine-Learning` / `Machine Learning` | Deep Learning、Reinforcement Learning | 机器学习原理、模型训练、评估与实践 |
 | `Robotics` | Kinematics、Statics、Dynamics | 机器人本体建模、分析与参数辨识 |
 | `Perception` | Computer Vision | 视觉、点云和传感器数据处理 |
 | `Localization-and-Mapping` | State Estimation、SLAM、Maps | 预留给定位、状态估计与建图 |
@@ -176,7 +176,7 @@ columns = [
 
 没有文章的预留方向不需要创建空目录；第一次加入相关文章时再创建对应目录和 `_index.md`。
 
-机器学习专栏已建立 `content/posts/Machine-Learning/_index.md`。将文章 Markdown 放入该目录即可自动继承 `Machine Learning`，无需在文章中重复填写 `columns`。当前没有正式文章，经典专栏列表和三维档案列会在加入第一篇非草稿文章后自动显示该专栏。
+机器学习专栏位于 `content/posts/Machine-Learning/`。深度学习文章放入 `Deep-Learning/`，强化学习文章放入 `Reinforcement-Learning/`；各子目录的 `_index.md` 会自动提供顶级和子级 Columns，无需在文章中重复填写 `columns`。当前分别收录反向传播梯度文章，以及强化学习基础概念、价值学习两篇文章。
 
 ### 5.3 新增文章到现有 Column
 
