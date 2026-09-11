@@ -18,8 +18,9 @@
 .column-heading small { font-size: 12px; color: #7b756a; }
 .column-rail { display: flex; gap: 12px; }
 .column-step { flex: 0 0 42px; align-self: center; height: 48px; border-radius: 50%; background: transparent; border: 1px solid transparent; font-size: 23px; transition: background .3s, border-color .3s; }
-.column-tabs { display: flex; flex: 1; gap: 10px; min-width: 0; overflow-x: auto; pointer-events: auto; }
-.column-tabs button { position: relative; isolation: isolate; flex: 1 0 185px; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 16px 18px; min-height: 104px; text-align: center; border: 0; background: transparent; color: #514d42; transition: color .35s; }
+.column-tabs { --column-slots: 5.6; position: relative; flex: 1; min-width: 0; height: 112px; overflow: hidden; pointer-events: auto; touch-action: pan-y; user-select: none; cursor: grab; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.column-tabs[data-dragging="true"], .column-tabs[data-dragging="true"] button { cursor: grabbing; }
+.column-tabs button { position: absolute; left: 50%; top: 0; isolation: isolate; width: calc(100% / var(--column-slots)); min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 16px 18px; min-height: 104px; text-align: center; border: 0; background: transparent; color: #514d42; transition: color .35s; will-change: transform; }
 /* Fade the material itself, so selected columns never flash into a solid tile. */
 .column-tabs button::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse at 50% 100%, #bd945b38, #f3ede530 65%, transparent 100%); opacity: 0; transition: opacity .45s; }
 .column-tabs button::after { content: ""; position: absolute; bottom: 0; left: 18px; right: 18px; height: 2px; pointer-events: none; background: linear-gradient(90deg, #ad814600, #ad8146 25%, #ad8146 75%, #ad814600); transform: scaleX(.2); opacity: 0; transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .35s; }
@@ -38,6 +39,7 @@
 .column-context { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 16px 54px; border: 0; }
 .column-context > span { font-size: 12px; color: #807768; }
 .column-context strong { margin-left: 14px; font-size: 14px; font-weight: 500; color: #37392f; }
+.column-filters { display: flex; align-items: center; gap: 32px; }
 .subcolumn-label { font-size: 12px; }
 .subcolumn-label select { max-width: 460px; font-size: 13px; cursor: pointer; }
 /* An annotation on the scene: typography and a leader line, without a panel. */

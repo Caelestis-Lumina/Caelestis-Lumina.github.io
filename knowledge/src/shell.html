@@ -22,13 +22,13 @@
   <div id="inspection-text" aria-hidden="true">CONFIDENTIALITY:<strong>GENERAL BUSINESS USE</strong></div>
   <section id="archive-ui" class="archive-ui" aria-label="档案选择">
     <div class="column-workspace">
-      <div class="column-heading"><span>知识专栏</span><small>选择一个主题，浏览它的档案</small></div>
+      <div class="column-heading"><span>知识专栏</span><small>左右拖动切换 · 当前专栏居中</small></div>
       <nav class="column-rail" aria-label="顶级专栏">
         <button data-action="column-prev" class="column-step" aria-label="上一专栏">←</button>
         <div id="column-tabs" class="column-tabs"></div>
         <button data-action="column-next" class="column-step" aria-label="下一专栏">→</button>
       </nav>
-      <div class="column-context"><span>当前专栏 <strong id="column-name"></strong></span><label class="subcolumn-label">子专栏 <select id="subcolumn" aria-label="筛选子专栏"></select></label></div>
+      <div class="column-context"><span>当前专栏 <strong id="column-name"></strong></span><div class="column-filters"><label class="subcolumn-label">全部专栏 <select id="top-column" aria-label="选择顶级专栏"></select></label><label class="subcolumn-label">子专栏 <select id="subcolumn" aria-label="筛选子专栏"></select></label></div></div>
     </div>
     <div class="archive-callout">
       <div class="eyebrow"><span id="archive-category"></span><span class="file-id" id="selected-id">X-<span id="selected-code">001</span></span></div>

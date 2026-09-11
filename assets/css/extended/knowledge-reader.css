@@ -17,3 +17,17 @@ html.knowledge-reader { color-scheme: light; background: #f5f2ec; }
 .knowledge-reader .post-title { font-size: clamp(25px, 3vw, 38px); }
 .knowledge-reader body:not(.home-page) .main > * { opacity: 1; animation: none; transform: none; }
 .knowledge-reader mjx-container[display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
+@media (max-width: 900px) {
+  .knowledge-reader .site-shell { padding: 14px 18px 40px; }
+  .knowledge-reader .post-header { margin: 0 0 24px; }
+  .knowledge-reader .post-meta { font-size: 12px; line-height: 1.7; overflow-wrap: anywhere; }
+  .knowledge-reader .post-content { font-size: 16px; }
+  .knowledge-reader .post-title { font-size: 24px; line-height: 1.4; text-wrap: initial; overflow-wrap: anywhere; }
+  .knowledge-reader .post-content h1 { font-size: 26px; }
+  .knowledge-reader .post-content h2 { font-size: 23px; }
+  .knowledge-reader .post-content h3 { font-size: 20px; }
+  .knowledge-reader .post-content h4 { font-size: 18px; }
+  .knowledge-reader .post-content :is(h1, h2, h3, h4) { margin-block: 1.6em .7em; line-height: 1.5; overflow-wrap: anywhere; }
+  .knowledge-reader .post-content > :first-child { margin-top: 0; }
+  .knowledge-reader mjx-container:not([display="true"]) { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}

@@ -11,7 +11,9 @@ export class SelectionView {
   private columns: ColumnNavigation;
   private code = createRollingNumber(element("#selected-code"), { value: 1, format: { minimumIntegerDigits: 3 }, duration: 460 });
   private lastLane = -1;
-  constructor(private catalog: ArchiveCatalog) { this.columns = new ColumnNavigation(catalog); }
+  constructor(private catalog: ArchiveCatalog, navigateColumn: (direction: number) => void) {
+    this.columns = new ColumnNavigation(catalog, navigateColumn);
+  }
 
   update(animated: boolean, navigation?: ArchiveNavigation) {
     const { selected, articles, columns } = this.catalog;
@@ -22,7 +24,7 @@ export class SelectionView {
     this.title.update(article.title, animated);
     this.code.update({ value: selected + 1, animated, direction });
     this.number.update({ value: files.indexOf(selected) + 1, animated, direction });
-    this.columns.update();
+    this.columns.update(animated, navigation);
     element("#selected-clearance").textContent = `${article.minutes} MIN READ`;
     element("#archive-category").textContent = columns[lane];
     element(".count-total").textContent = String(files.length).padStart(2, "0");

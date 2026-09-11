@@ -41,5 +41,12 @@ const classic = readFileSync(localFile(base + "classic/"), "utf8");
 assert.ok(classic.includes("home-portal") && classic.includes("home-page"), "Classic homepage layout is missing");
 assert.ok(classic.includes("data-view-mode") && classic.includes("js/view-mode.min."), "Classic mode switch is missing");
 assert.ok(!classic.includes("three-renderer"), "Classic pages must not load the WebGL renderer");
+const preloadPath = classic.match(/name=["']?knowledge-preload["']?\s+content=["']?([^\s"'>]+)/)?.[1];
+assert.ok(preloadPath, "Classic pages need an idle preload manifest");
+const preload = JSON.parse(readFileSync(localFile(preloadPath), "utf8"));
+for (const url of preload) assert.ok(existsSync(localFile(url)), `Preload asset is missing: ${url}`);
+for (const entry of Object.values(manifest))
+  assert.ok(preload.some(url => url.endsWith('/knowledge/' + entry.file)), "Preload manifest references a stale build");
+assert.ok(html.includes('entry-classic') && html.includes('data-view-redirect'), "Loading screen must allow classic navigation and skip redirected entry scripts");
 for (const page of catalog.pages || []) assert.ok(existsSync(localFile(page.url)), `Site navigation target is missing: ${page.url}`);
 console.log(`Verified ${catalog.articles.length} article routes, both GLB models, bundled assets and existing blog routes at ${base}`);
