@@ -45,10 +45,11 @@
   .archive-hint, .system-footer, .object-caption, #inspection-marks, #inspection-text { display: none; }
   .back-button { left: 18px; top: 115px; min-height: 44px; }
   .back-button small { display: none; }
-  .detail-content { display: flex; flex-direction: column; left: 18px; right: 18px; top: 49%; width: auto; max-height: 46%; padding: 12px 8px 28px; overscroll-behavior: contain; }
+  .detail-content { display: flex; flex-direction: column; left: 18px; right: 18px; top: 49%; bottom: max(12px, env(safe-area-inset-bottom)); width: auto; max-height: none; padding: 12px 8px 20px; overscroll-behavior: contain; background: linear-gradient(#e8e5e1e8, #e8e5e1cc); }
+  .detail-content > * { flex-shrink: 0; }
   .detail-kicker { order: -4; }
   .detail-content h2 { order: -3; margin: 12px 0; }
-  .article-actions { order: -2; position: sticky; top: 0; z-index: 1; margin: 0; padding: 6px 0; }
+  .article-actions { order: -2; position: sticky; top: -12px; z-index: 1; margin: 0; padding: 12px 0; background: #e8e5e1; }
   .detail-content h2 { font-size: 23px; }
   .article-abstract { font-size: 16px; line-height: 1.8; }
   .article-actions button { min-height: 48px; padding: 12px 20px; }
@@ -64,14 +65,14 @@
   .search-count { margin-inline: 16px; }
   .setting-row { padding: 16px; gap: 16px; }
 }
-@media (max-width: 700px) {
+@media (max-width: 900px) {
   .article-reader { width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; }
-  .article-reader .dialog-header { gap: 0; padding-top: max(8px, env(safe-area-inset-top)); }
+  .article-reader .dialog-header { gap: 0; padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 4px max(16px, env(safe-area-inset-left)); }
   .article-reader .dialog-header > div:first-child { width: 100%; }
   .article-reader .dialog-header h2 { font-size: 14px; margin-top: 4px; }
   .reader-tools { width: 100%; justify-content: space-between; gap: 8px; font-size: 12px; }
   .reader-tools #reader-expand { display: none; }
-  .reader-body { position: relative; }
+  .reader-body { position: relative; padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   #reader-outline { position: absolute; inset: 0 auto 0 0; width: min(300px, 85vw); z-index: 2; background: #f5f2ec; box-shadow: 12px 0 28px #29261c26; padding: 20px 16px; }
   #reader-outline a { min-height: 44px; }
 }
@@ -88,4 +89,9 @@
   .file-summary, .column-heading small { display: none; }
   .back-button { top: 72px; }
   .detail-content { left: 48%; top: 96px; max-height: calc(100% - 110px); }
+  .article-reader .dialog-header { flex-wrap: nowrap; gap: 16px; }
+  .article-reader .dialog-header > div:first-child { flex: 1; width: auto; }
+  .article-reader .dialog-header > div:first-child > span { display: none; }
+  .article-reader .dialog-header h2 { margin: 0; }
+  .reader-tools { width: auto; gap: 20px; flex-wrap: nowrap; }
 }

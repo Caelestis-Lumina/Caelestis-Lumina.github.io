@@ -42,7 +42,7 @@ export class ArticleReader extends Dialog {
       outline.hidden = !outline.hidden;
       element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!outline.hidden));
     });
-    const narrow = matchMedia('(max-width: 700px)');
+    const narrow = matchMedia('(max-width: 900px)');
     const foldOutline = () => {
       element('#reader-outline', this.root).hidden = narrow.matches;
       element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!narrow.matches));
