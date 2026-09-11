@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { ArchiveGesture, type ArchiveStep } from "../archive-gesture.ts";
+import {compactLayout} from '../responsive.ts';
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { createArchiveLighting, type LightingLook } from "./archive-lighting";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -128,7 +129,7 @@ export class ArchiveScene {
     });
     this.renderer.setPixelRatio(
       Math.min(devicePixelRatio, 1.5) *
-        Math.min(innerWidth / 1920, innerHeight / 1080),
+        (compactLayout() ? 1 : Math.min(innerWidth / 1920, innerHeight / 1080)),
     );
     this.renderer.setSize(container.clientWidth, container.clientHeight);
     this.renderer.localClippingEnabled = true;
@@ -606,7 +607,7 @@ export class ArchiveScene {
       h = this.container.clientHeight;
     this.renderer.setPixelRatio(
       Math.min(devicePixelRatio, this.highQuality ? 1.5 : 1) *
-        Math.min(innerWidth / 1920, innerHeight / 1080),
+        (compactLayout() ? 1 : Math.min(innerWidth / 1920, innerHeight / 1080)),
     );
     this.composer.setPixelRatio(this.renderer.getPixelRatio());
     this.renderer.setSize(w, h);
@@ -989,6 +990,9 @@ export class ArchiveScene {
       72,
       detail,
     );
+    const compact = compactLayout();
+    const landscape = compact && this.camera.aspect > 1.3;
+    const visibleSpan = THREE.MathUtils.lerp(span, compact ? Math.max(11, 6 / this.camera.aspect) : 5.9, detail);
     const arrayAim = new THREE.Vector3(
       -1.091,
       THREE.MathUtils.lerp(-2.55 + 0.4 * orbit, -0.045, settle),
@@ -1089,8 +1093,8 @@ export class ArchiveScene {
       const detailAim = this.model.position
         .clone()
         .add(new THREE.Vector3(0, 1.85, 0));
-      detailAim.addScaledVector(right, (960 - 550) / pixelScale);
-      detailAim.addScaledVector(up, (560 - 540) / pixelScale);
+      detailAim.addScaledVector(right, compact ? (landscape ? visibleSpan * this.camera.aspect * .25 : 0) : (960 - 550) / pixelScale);
+      detailAim.addScaledVector(up, compact ? visibleSpan * (landscape ? .12 : -.17) : (560 - 540) / pixelScale);
       cameraAim.lerp(detailAim, detail);
     }
     const cameraPosition = cameraAim
@@ -1107,7 +1111,7 @@ export class ArchiveScene {
     this.camera.fov = THREE.MathUtils.lerp(
       this.camera.fov,
       THREE.MathUtils.radToDeg(
-        2 * Math.atan(THREE.MathUtils.lerp(span, 5.9, detail) / (2 * distance)),
+        2 * Math.atan(visibleSpan / (2 * distance)),
       ),
       cameraBlend,
     );

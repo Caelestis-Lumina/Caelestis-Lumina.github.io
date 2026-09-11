@@ -1,0 +1,91 @@
+/* Compact layouts use real CSS pixels, never a miniaturized desktop stage. */
+@media (max-width: 900px) {
+  #viewport, #stage { overflow: clip; }
+  #stage { left: 0; top: 0; }
+  .brand { top: max(18px, env(safe-area-inset-top)); left: 18px; }
+  .brand h1 { font-size: 17px; line-height: 24px; transform: none; }
+  .brand > div { font-size: 8px; line-height: 12px; margin-top: 4px; letter-spacing: .03em; }
+  .system-nav { top: max(12px, env(safe-area-inset-top)); right: 12px; gap: 8px; }
+  .system-nav > button { min-width: 44px; min-height: 44px; font-size: 14px; }
+  .system-nav > button[data-action="about"] { display: none; }
+  .system-nav .key { display: none; }
+  .view-switch { position: absolute; right: 0; top: 51px; padding: 3px; white-space: nowrap; }
+  .view-switch a, .view-switch span { padding: 10px 12px; font-size: 12px; }
+  .column-workspace { top: 122px; left: 12px; right: 12px; }
+  .column-heading { gap: 12px; margin-bottom: 5px; }
+  .column-heading > span { font-size: 14px; }
+  .column-heading small { font-size: 10px; }
+  .column-rail { gap: 0; }
+  .column-step { flex-basis: 36px; min-height: 44px; font-size: 22px; }
+  .column-tabs { --column-slots: 3; height: 90px; }
+  .column-tabs button { min-height: 86px; padding: 10px 4px; gap: 6px 4px; }
+  .column-tabs strong { font-size: 13px; overflow-wrap: anywhere; }
+  .column-order, .column-count { font-size: 9px; }
+  .column-context { padding: 8px 0; gap: 0; }
+  .column-context > span { display: none; }
+  .column-filters { gap: 12px; width: 100%; }
+  .column-filters label { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 0; font-size: 10px; }
+  .column-filters select { width: 100%; max-width: 100%; min-height: 44px; font-size: 16px; }
+  .archive-callout { top: auto; bottom: 102px; left: 22px; right: 22px; width: auto; }
+  .eyebrow { margin-bottom: 8px; font-size: 11px; gap: 16px; }
+  .eyebrow .file-id { font-size: 21px; }
+  .file-title { font-size: 22px; }
+  #selected-title { line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .file-open { font-size: 20px; margin-top: 4px; }
+  .callout-rule { margin: 12px 0 0; }
+  .callout-rule::before, .callout-rule i { display: none; }
+  .file-summary { margin-top: 8px; font-size: 11px; }
+  .read-file { margin-top: 6px; min-height: 44px; font-size: 15px; }
+  .file-browser { left: 18px; right: 18px; bottom: 42px; justify-content: space-between; gap: 14px; }
+  .archive-counter { gap: 10px; }
+  .archive-counter > div { font-size: 28px; }
+  .archive-navigation { gap: 3px; }
+  .archive-navigation > button { width: 44px; height: 44px; }
+  .file-ticks { max-width: 90px; overflow: hidden; }
+  .archive-hint, .system-footer, .object-caption, #inspection-marks, #inspection-text { display: none; }
+  .back-button { left: 18px; top: 115px; min-height: 44px; }
+  .back-button small { display: none; }
+  .detail-content { display: flex; flex-direction: column; left: 18px; right: 18px; top: 49%; width: auto; max-height: 46%; padding: 12px 8px 28px; overscroll-behavior: contain; }
+  .detail-kicker { order: -4; }
+  .detail-content h2 { order: -3; margin: 12px 0; }
+  .article-actions { order: -2; position: sticky; top: 0; z-index: 1; margin: 0; padding: 6px 0; }
+  .detail-content h2 { font-size: 23px; }
+  .article-abstract { font-size: 16px; line-height: 1.8; }
+  .article-actions button { min-height: 48px; padding: 12px 20px; }
+  .article-tags button { min-height: 40px; }
+  .loading > span { font-size: 9px; letter-spacing: 1px; }
+  .knowledge-dialog { width: calc(100vw - 20px); max-height: 96dvh; }
+  .dialog-header, .article-reader .dialog-header { padding: 12px 16px; gap: 12px; }
+  .dialog-header button, .reader-tools a, .reader-tools button { min-height: 44px; display: inline-flex; align-items: center; }
+  .dialog-header h2 { font-size: 20px; }
+  .dialog-header kbd { display: none; }
+  .search-controls { padding: 12px 16px 0; gap: 12px; }
+  .search-results { padding: 0 16px 20px; }
+  .search-count { margin-inline: 16px; }
+  .setting-row { padding: 16px; gap: 16px; }
+}
+@media (max-width: 700px) {
+  .article-reader { width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; }
+  .article-reader .dialog-header { gap: 0; padding-top: max(8px, env(safe-area-inset-top)); }
+  .article-reader .dialog-header > div:first-child { width: 100%; }
+  .article-reader .dialog-header h2 { font-size: 14px; margin-top: 4px; }
+  .reader-tools { width: 100%; justify-content: space-between; gap: 8px; font-size: 12px; }
+  .reader-tools #reader-expand { display: none; }
+  .reader-body { position: relative; }
+  #reader-outline { position: absolute; inset: 0 auto 0 0; width: min(300px, 85vw); z-index: 2; background: #f5f2ec; box-shadow: 12px 0 28px #29261c26; padding: 20px 16px; }
+  #reader-outline a { min-height: 44px; }
+}
+@media (max-width: 900px) and (max-height: 600px) and (orientation: landscape) {
+  .view-switch { position: static; }
+  .column-workspace { top: 72px; }
+  .column-heading { display: none; }
+  .column-tabs { height: 76px; }
+  .column-tabs button { min-height: 72px; }
+  .column-context { padding-top: 0; }
+  .column-filters label { flex-direction: row; align-items: center; gap: 8px; white-space: nowrap; }
+  .archive-callout { left: 48%; bottom: 18px; }
+  .file-browser { right: 56%; bottom: 20px; }
+  .file-summary, .column-heading small { display: none; }
+  .back-button { top: 72px; }
+  .detail-content { left: 48%; top: 96px; max-height: calc(100% - 110px); }
+}

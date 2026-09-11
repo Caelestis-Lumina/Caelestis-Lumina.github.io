@@ -17,3 +17,9 @@ html.knowledge-reader { color-scheme: light; background: #f5f2ec; }
 .knowledge-reader .post-title { font-size: clamp(25px, 3vw, 38px); }
 .knowledge-reader body:not(.home-page) .main > * { opacity: 1; animation: none; transform: none; }
 .knowledge-reader mjx-container[display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
+@media (max-width: 700px) {
+  .knowledge-reader .site-shell { padding: 14px 18px 40px; }
+  .knowledge-reader .post-content { font-size: 16px; }
+  .knowledge-reader .post-title { font-size: 25px; }
+  .knowledge-reader mjx-container:not([display="true"]) { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}

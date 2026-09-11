@@ -1,3 +1,5 @@
+import {lightRendering} from './responsive.ts';
+
 export function readPreference<T>(key: string, fallback: T): T {
   try { return JSON.parse(localStorage.getItem(`cl-knowledge:${key}`) || "null") ?? fallback; }
   catch { return fallback; }
@@ -8,7 +10,7 @@ export function writePreference(key: string, value: unknown) {
 export class Preferences {
   readonly systemMotion = matchMedia("(prefers-reduced-motion: reduce)");
   private manualReduced = readPreference<boolean>("reduced", false) === true;
-  quality = readPreference<boolean>("quality", true) !== false;
+  quality = readPreference<boolean>("quality", !lightRendering()) !== false;
   get reduced() { return this.manualReduced || this.systemMotion.matches; }
   setReduced(value: boolean) { this.manualReduced = value; writePreference("reduced", value); }
   setQuality(value: boolean) { this.quality = value; writePreference("quality", value); }

@@ -9,6 +9,7 @@ import { SelectionView } from "./selection-view.ts";
 import { element, siteURL } from "./dom.ts";
 import { logo } from "./rhine/brand.ts";
 import shell from "./shell.html?raw";
+import {compactLayout} from './responsive.ts';
 
 type Mode = "boot" | "archive" | "detail";
 
@@ -82,6 +83,7 @@ export class KnowledgeApp {
     this.scene.renderer.domElement.addEventListener("webglcontextlost", event => {
       event.preventDefault();
       this.ready = false;
+      document.documentElement.dataset.knowledgeReady = 'false';
       cancelAnimationFrame(this.frameId);
       element("#loading").classList.remove("loaded");
       element("#loading").innerHTML = '<div class="error-state"><h2>图形连接已中断</h2><p>请重新载入以恢复三维场景。</p><button onclick="location.reload()">重新载入 ↗</button></div>';
@@ -111,7 +113,7 @@ export class KnowledgeApp {
     this.select(0);
     element("#loading").classList.add("loaded");
     this.boot.start();
-    if (readPreference<boolean>("visited", false) === true || this.prefs.reduced || location.hash)
+    if (readPreference<boolean>("visited", false) === true || this.prefs.reduced || compactLayout() || location.hash)
       this.enterArchive();
     else this.setMode("boot");
     this.schedule();
@@ -153,6 +155,7 @@ export class KnowledgeApp {
   private setMode(mode: Mode) {
     this.mode = mode;
     this.stage.dataset.mode = mode;
+    document.documentElement.dataset.knowledgeReady = String(mode !== 'boot');
     for (const [selector, active] of [["#boot", mode === "boot"], ["#archive-ui", mode === "archive"],
       [".system-nav", mode !== "boot"], [".system-footer", mode !== "boot"]] as const) {
       element(selector).inert = !active;
@@ -200,8 +203,11 @@ export class KnowledgeApp {
   }
 
   private fit() {
+    const compact = compactLayout();
     const scale = Math.min(innerWidth / 1920, innerHeight / 1080);
-    this.stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    this.stage.style.width = compact ? `${innerWidth}px` : '';
+    this.stage.style.height = compact ? `${innerHeight}px` : '';
+    this.stage.style.transform = compact ? 'none' : `translate(-50%, -50%) scale(${scale})`;
     this.scene?.resize();
   }
   private schedule() {

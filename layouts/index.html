@@ -6,6 +6,7 @@
   <meta name="description" content="{{ site.Params.description }}">
   {{- if not hugo.IsProduction }}<meta name="robots" content="noindex,nofollow">{{ end }}
   <meta name="theme-color" content="#e8e5e1">
+  <style>body{margin:0;background:#e8e5e1}#entry-classic{position:fixed;top:max(16px,env(safe-area-inset-top));right:max(16px,env(safe-area-inset-right));z-index:1000;padding:12px 18px;border:1px solid #b8afa1;border-radius:24px;background:#f4f1eb;color:#30332b;font:14px/1.4 system-ui;text-decoration:none}html[data-knowledge-ready="true"] #entry-classic{display:none}</style>
   {{ partial "knowledge-mode.html" "3d" }}
   <meta name="knowledge-index" content="{{ "knowledge-index.json" | relURL }}">
   <title>{{ site.Title }} · Knowledge OS</title>
@@ -19,7 +20,7 @@
     {{- range . -}}
       {{- if .isEntry -}}
         {{- range .css }}<link rel="stylesheet" href="{{ printf "knowledge/%s" . | relURL }}">{{ end -}}
-        <script type="module" src="{{ printf "knowledge/%s" .file | relURL }}"></script>
+        <script type="module">if (!document.documentElement.hasAttribute('data-view-redirect')) { import({{ printf "knowledge/%s" .file | relURL | jsonify | safeJS }}); }</script>
       {{- end -}}
     {{- end -}}
   {{- else -}}
@@ -27,6 +28,7 @@
   {{- end }}
 </head>
 <body>
+  <a id="entry-classic" href="{{ "classic/" | relURL }}" data-view-mode="classic">切换经典视图 ↗</a>
   <main id="viewport"><div id="stage"><p class="initial-status">正在连接知识档案… <a href="{{ "classic/" | relURL }}" data-view-mode="classic">切换经典视图 ↗</a></p></div></main>
   <noscript>
     <style>#viewport { display: none; } body { overflow: auto; }</style>

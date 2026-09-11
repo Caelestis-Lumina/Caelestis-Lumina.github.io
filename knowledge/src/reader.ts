@@ -42,6 +42,16 @@ export class ArticleReader extends Dialog {
       outline.hidden = !outline.hidden;
       element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!outline.hidden));
     });
+    const narrow = matchMedia('(max-width: 700px)');
+    const foldOutline = () => {
+      element('#reader-outline', this.root).hidden = narrow.matches;
+      element('#reader-outline-toggle', this.root).setAttribute('aria-expanded', String(!narrow.matches));
+    };
+    foldOutline();
+    narrow.addEventListener('change', foldOutline);
+    element('#reader-outline nav', this.root).addEventListener('click', event => {
+      if (narrow.matches && (event.target as HTMLElement).closest('a')) foldOutline();
+    });
     this.frame.addEventListener("load", () => this.loaded());
     window.addEventListener("message", event => {
       if (event.origin === location.origin && event.source === this.frame.contentWindow &&

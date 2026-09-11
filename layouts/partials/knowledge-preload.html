@@ -1,0 +1,10 @@
+{{- $urls := slice -}}
+{{- range hugo.Data.knowledge -}}
+  {{- $urls = $urls | append (printf "knowledge/%s" .file | relURL) -}}
+  {{- range .css -}}{{- $urls = $urls | append (printf "knowledge/%s" . | relURL) -}}{{- end -}}
+  {{- range .assets -}}{{- $urls = $urls | append (printf "knowledge/%s" . | relURL) -}}{{- end -}}
+{{- end -}}
+{{- $urls = $urls | append ("rhine/assets/archive-cassette.glb?v=5abab02" | relURL) ("rhine/assets/archive-assembly.glb?v=5abab02" | relURL) -}}
+{{- $manifest := resources.FromString "assets/knowledge-preload.json" ($urls | uniq | jsonify) | fingerprint -}}
+<meta name="knowledge-preload" content="{{ $manifest.RelPermalink }}">
+{{ with resources.Get "js/knowledge-preload.js" | minify | fingerprint }}<script defer src="{{ .RelPermalink }}"></script>{{ end }}

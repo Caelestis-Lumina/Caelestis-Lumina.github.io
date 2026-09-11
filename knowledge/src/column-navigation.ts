@@ -41,7 +41,8 @@ export class ColumnNavigation {
       this.pointer = event.pointerId;
       this.suppressClick = false;
       cancelAnimationFrame(this.frame);
-      this.carousel.begin(event.clientX, this.host.getBoundingClientRect().width / 5.6);
+      const slots = Number(getComputedStyle(this.host).getPropertyValue('--column-slots')) || 5.6;
+      this.carousel.begin(event.clientX, this.host.getBoundingClientRect().width / slots);
     });
     // Capture after the drag threshold so a stationary press remains a click.
     window.addEventListener("pointermove", event => {

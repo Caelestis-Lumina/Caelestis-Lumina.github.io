@@ -1,4 +1,4 @@
-/* Shared by both Hugo surfaces; the WebGL bundle is never loaded by classic pages. */
+/* Shared entry routing; classic pages may warm assets but never execute WebGL. */
 (() => {
   if (window.parent !== window) return;
   const base = new URL(document.querySelector('meta[name="knowledge-base"]').content, location.href);
@@ -8,6 +8,22 @@
   const key = 'cl-knowledge:view';
   let preference;
   try { preference = localStorage.getItem(key); } catch {}
+  const mobile = matchMedia('(max-width: 767px), (pointer: coarse) and (max-width: 1024px)').matches;
+  const redirect = url => {
+    document.documentElement.setAttribute('data-view-redirect', 'true');
+    location.replace(url);
+  };
+  const classicURL = () => {
+    const route = new URLSearchParams(location.hash.slice(1));
+    const path = route.get('article') || route.get('page');
+    if (path) {
+      try {
+        const url = new URL(path, base);
+        if (url.origin === base.origin && url.pathname.startsWith(base.pathname) && url.pathname !== base.pathname) return url.href;
+      } catch {}
+    }
+    return classic.href;
+  };
   const sceneURL = path => {
     const url = new URL(base);
     if (path && path !== base.pathname && path !== classic.pathname)
@@ -15,12 +31,12 @@
     else try { url.hash = sessionStorage.getItem('cl-knowledge:last-scene') || ''; } catch {}
     return url.href;
   };
-  if (surface === '3d' && !location.hash && preference === 'classic') {
-    location.replace(classic.href);
+  if (surface === '3d' && ((!location.hash && preference === 'classic') || (mobile && preference !== '3d'))) {
+    redirect(classicURL());
     return;
   }
   if (surface === 'classic' && preference === '3d') {
-    location.replace(sceneURL(location.pathname + location.search + location.hash));
+    redirect(sceneURL(location.pathname + location.search + location.hash));
     return;
   }
   const normalizeLink = link => {
@@ -33,7 +49,11 @@
     if (surface === 'classic' && url.origin === base.origin && url.pathname === base.pathname && !link.hasAttribute('data-view-mode'))
       link.href = classic.href;
   };
-  document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('a[href]').forEach(normalizeLink));
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('a[href]').forEach(normalizeLink);
+    const escape = document.querySelector('#entry-classic');
+    if (escape) escape.href = classicURL();
+  });
   document.addEventListener('click', event => {
     const target = event.target.closest('[data-view-mode]');
     if (target) {
