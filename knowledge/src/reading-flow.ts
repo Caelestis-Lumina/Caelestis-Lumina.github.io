@@ -45,9 +45,8 @@ export class ReadingFlow {
     try { await this.app.renderingScene.prepareReadingAssembly(); }
     catch (error) { console.warn("Reading animation unavailable; continuing with article", error); }
     if (signal.aborted) return;
-    // Direct links can reach this flow before the extraction camera has settled.
-    const started = performance.now();
-    while (this.app.renderingScene.detailVisibility < .95 && performance.now() - started < 1800) {
+    // Wait for physical clearance, not the earlier UI fade or a wall-clock timeout.
+    while (!continuing && !this.app.renderingScene.readingReady) {
       if (!await tween(50, signal, () => {})) return;
     }
     const from = this.app.renderingScene.currentReadingSpread;

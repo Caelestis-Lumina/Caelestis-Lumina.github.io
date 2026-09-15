@@ -19,14 +19,14 @@ tags = []
 
 ## 为什么反向传播可以实现
 ### 损失函数是关于参数的函数
-如果要将一个函数F对一个变量x求偏导，那偏导存在的前提条件就是F是关于x的函数，否则求导结果就是0
+如果要将一个函数F对一个变量 $x$ 求偏导，那偏导存在的前提条件就是 $F$ 是关于 $x$ 的函数，否则求导结果就是0
 * 符号定义（后续公式均据此展开）
 	* $x=[x_1,x_2,\dots x_n]$
 	* $y_{pred}=[y_1,y_2, \dots y_m]$
 	* $\theta=[w_1,b_1,w_2,b_2,\dots w_n,b_n]$
-	* $a^{i}=第 i层网络激活函数的输出，最后一层的输出就是y_{pred}$
-	* $z^{i}=第i层网络隐藏层的输出$
-	* $g^i\ '(z^i)第i层激活函数的导数，在输入=z^i处的值$
+	* $a^{i}$=第 $i$ 层网络激活函数的输出，最后一层的输出就是 $y_{pred}$
+	* $z^{i}=$第 $i$ 层网络隐藏层的输出
+	* $g'^i(z^i)$第 $i$ 层激活函数的导数，在输入= $z^i$ 处的值
 * 关系式
 	* 网络的抽象函数式 $y_{pred}=F(x;\theta)$
 		即网络就是一个巨大的多元函数，接受两个向量（模型输入和参数）作为输入，经过内部正向传播后输出一个向量
@@ -42,20 +42,17 @@ $$
 其中，$\frac{\partial L}{\partial z^i}$是损失L对第i层加权输入$z^i$的梯度，$\frac{\partial z^i}{\partial \theta^i}$是第i层加权输入$z^i$对本层参数$\theta^i$的梯度
 
 * 进一步深究可以**发现$\frac{\partial z^i}{\partial \theta^i}$相对容易求**，因为它只涉及到当前层的当前神经元的求解，在面向对象语言中，很容易为每个属于同一个类的实例增加一个方法，比如像这里的输入对参数求导，举例来说;
-$$
-if\ \theta^i=W^i\ and\ Z^i=W^i*a^{i-1}+b^i,\\
-then\ \frac{\partial z^i}{\partial \theta^i}=(a^{i-1})^T
-$$
-其中，
-(说实话，我非常想把隐藏层称为“传递函数”，控制和机器学习实际上有非常多可以相互借鉴的地方，而且在事实上，二者也确实是不可分割的关系)
+$$if\ \theta^i=W^i\ and\ Z^i=W^i*a^{i-1}+b^i$$
+$$then\ \frac{\partial z^i}{\partial \theta^i}=(a^{i-1})^T$$
+	> 对我来说，隐藏层和控制中的“传递函数”非常类似，控制和机器学习有不少可以相互借鉴的地方)
 
 * 然后我们要来处理相对麻烦的 $\frac{\partial L}{\partial z^i}$
 	* 多层感知机为例，共k层，已知网络输出，求网络第i层的梯度
 	* 用数学归纳法在这种递归系统中比较合适
 		* 归纳奠基
-			$L=L(y_{true},y_{pred})=L(y_{true},F(x;\theta))$
+			$$L=L(y_{true},y_{pred})=L(y_{true},F(x;\theta))$$
 			
-			$\frac{\partial L}{\partial z^k}=\frac{\partial L}{\partial a^k}·\frac{\partial a^k}{\partial z^k}=\frac{\partial L}{\partial a^k}\otimes (g^k)'(z^k)$
+			$$\frac{\partial L}{\partial z^k}=\frac{\partial L}{\partial a^k}·\frac{\partial a^k}{\partial z^k}=\frac{\partial L}{\partial a^k}\otimes{g'^{k}(z^k)}$$
 			
 			上面的公式说明：损失对隐藏层输出的偏导，等价于**损失函数**对最终输出**的偏导**，再**逐元素乘**上最后层**激活函数** 在隐藏层输出处 **的导数**
 			

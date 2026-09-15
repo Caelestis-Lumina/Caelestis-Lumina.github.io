@@ -107,6 +107,10 @@ export interface Spring {
   value: number;
   velocity: number;
 }
+/** The opening shot freezes its source pose, so never capture a half-extracted file. */
+export function readyToRead(lift: Spring, cameraDetail: number) {
+  return Math.abs(lift.value - INSPECTION_LIFT) < .015 && Math.abs(lift.velocity) < .08 && cameraDetail > .995;
+}
 export function damp(s: Spring, target: number, rate: number, dt: number) {
   const delta = s.value - target;
   const impulse = s.velocity + rate * delta;

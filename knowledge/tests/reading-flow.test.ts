@@ -11,7 +11,7 @@ function setup() {
   Object.assign(globalThis, {document: {createElement: node, body: {append() {}}, addEventListener() {}}});
   let release!: () => void;
   const preparation = new Promise<void>(resolve => release = resolve);
-  const scene = {detailVisibility: 1, currentReadingSpread: 0, prepareReadingAssembly: () => preparation,
+  const scene = {readingReady: true, currentReadingSpread: 0, prepareReadingAssembly: () => preparation,
     setReadingSpread(value: number) { this.currentReadingSpread = value; },
     resetReadingAssembly() { this.currentReadingSpread = 0; },
     clearReadingAssembly() { this.currentReadingSpread = 0; }, readingBounds: () => ({left: 0, top: 0, width: 100, height: 100})};
@@ -21,6 +21,28 @@ function setup() {
   return {app, reader, scene, release, flow: new ReadingFlow(app as unknown as KnowledgeApp, reader as unknown as ArticleReader)};
 }
 const article = {url: "/posts/a/", title: "A"} as Article;
+
+test('direct article links wait beyond the old timeout for extraction and remain cancellable', async () => {
+  for (const cancel of [false, true]) {
+    const frames = new Map<number, FrameRequestCallback>();
+    let id = 0;
+    Object.assign(globalThis, {requestAnimationFrame: (callback: FrameRequestCallback) => {frames.set(++id, callback); return id;},
+      cancelAnimationFrame: (key: number) => frames.delete(key)});
+    const advance = () => {for (const [key, callback] of [...frames]) {frames.delete(key); callback(performance.now() + 5000);}};
+    const {flow, scene, reader, release} = setup();
+    scene.readingReady = false;
+    release();
+    const opening = flow.open(article);
+    await Promise.resolve();
+    advance(); await Promise.resolve(); await Promise.resolve();
+    assert.equal(scene.currentReadingSpread, 0);
+    assert.equal(reader.isOpen, false);
+    if (cancel) flow.reset();
+    else {scene.readingReady = true; advance();}
+    await opening;
+    assert.equal(reader.shows, cancel ? 0 : 1);
+  }
+});
 
 test('surface handoff overlaps the moving page, with no text until arrival or after cancellation', async () => {
   for (const cancel of [false, true]) {

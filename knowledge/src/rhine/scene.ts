@@ -40,6 +40,7 @@ import {
   cinematicField,
   INSPECTION_LIFT,
   returnStep,
+  readyToRead,
 } from "./motion";
 
 const ease = (t: number) => {
@@ -1237,6 +1238,9 @@ export class ArchiveScene {
   }
   get detailVisibility() {
     return ease((this.detail - 0.25) / 0.55);
+  }
+  get readingReady() {
+    return this.targetDetail === 1 && readyToRead(this.lift, this.detail);
   }
   getStats() {
     this.model.updateMatrixWorld(true);

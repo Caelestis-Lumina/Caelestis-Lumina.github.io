@@ -1,10 +1,18 @@
 .classic-view-switch { position: fixed; right: 24px; top: 8px; z-index: 121; display: flex; gap: 4px; padding: 5px; background: var(--theme); border: 1px solid var(--border); border-radius: 30px; box-shadow: 0 4px 22px #0002; font-size: 13px; }
-.classic-view-switch a, .classic-view-switch span { padding: 8px 16px; border-radius: 24px; }
-.classic-view-switch span { background: var(--primary); color: var(--theme); }
+.classic-view-switch a, .classic-view-switch > span { padding: 8px 16px; border-radius: 24px; }
+.classic-view-switch > span { background: var(--primary); color: var(--theme); }
+.view-label-mobile { display: none; }
 /* Reserve space in the sticky header so its navigation never sits under the switch. */
 .header { padding-inline-end: 224px; }
-@media (max-width: 600px) {
-  .classic-view-switch { right: 16px; }
-  .header { padding-inline-end: 0; padding-top: 60px; }
+@media (max-width: 900px) {
+  .classic-view-switch { right: max(12px, env(safe-area-inset-right)); top: max(8px, env(safe-area-inset-top)); padding: 0; box-shadow: none; font-size: 12px; }
+  .classic-view-switch a { padding: 10px; line-height: 20px; }
+  .classic-view-switch > span, .view-label-desktop { display: none; }
+  .view-label-mobile { display: inline; }
+  .header { padding: env(safe-area-inset-top) 0 0; }
+  .header .nav { display: block; }
+  .header .logo { margin-inline: 16px 112px; min-height: 60px; flex-wrap: nowrap; }
+  .header .logo > a { font-size: clamp(15px, 4vw, 22px); white-space: nowrap; }
+  .header #menu { margin: 0 12px; line-height: 44px; }
 }
 .knowledge-reader .classic-view-switch { display: none; }
